@@ -3,7 +3,7 @@ package org.outsiders.arena.domain;
 import java.util.List;
 import java.util.Map;
 
-import org.outsiders.arena.handler.NRG;
+import org.outsiders.arena.util.NRG;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
@@ -20,6 +20,7 @@ public class Battle
   private int arenaId;
   private int playerIdOne;
   private int playerIdTwo;
+  private List<Character> battleCharacters;
   private List<CharacterInstance> playerOneTeam;
   private List<CharacterInstance> playerTwoTeam;
   private Map<String, Integer> playerOneEnergy;
@@ -167,5 +168,13 @@ public Map<String, Integer> getPlayerTwoEnergy() {
 
 public void setPlayerTwoEnergy(Map<String, Integer> playerTwoEnergy) {
 	this.playerTwoEnergy = playerTwoEnergy;
+}
+
+public List<Character> getBattleCharacters() {
+	return battleCharacters;
+}
+
+public void setBattleCharacters(List<Character> battleCharacters) {
+	this.battleCharacters = battleCharacters;
 }
 }

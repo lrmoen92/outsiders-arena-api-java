@@ -1,6 +1,5 @@
 package org.outsiders.arena.configuration;
 
-import org.outsiders.arena.MainClass.LeagueChampion;
 import org.outsiders.arena.handler.BattleSocketHandler;
 import org.outsiders.arena.handler.GlobalSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;

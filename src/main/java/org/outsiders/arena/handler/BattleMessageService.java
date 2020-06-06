@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.outsiders.arena.domain.AbilityTargetDTO;
 import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.BattleTurnDTO;
 import org.outsiders.arena.domain.Character;
@@ -14,6 +13,7 @@ import org.outsiders.arena.domain.Player;
 import org.outsiders.arena.service.BattleService;
 import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.service.PlayerService;
+import org.outsiders.arena.util.NRG;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,80 +54,54 @@ public class BattleMessageService {
         String opponentName = getMapEntryAsString("opponentName", valueMap);
         if (!opponentName.isEmpty()) {
         	Battle battle = this.battleService.getByPlayerDisplayName(opponentName);
-            if (battle == null) {
-    	        battle = new Battle();
-    	        battle.setId(this.nrg.randomInt());
-    	        battle.setArenaId(arenaId);
-    	        battle.setPlayerIdOne(playerId.intValue());
-
-                ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
-                CharacterInstance i1 = new CharacterInstance();
-                CharacterInstance i2 = new CharacterInstance();
-                CharacterInstance i3 = new CharacterInstance();
-                i1.setCharacterId(characterId1.intValue());
-                i2.setCharacterId(characterId2.intValue());
-                i3.setCharacterId(characterId3.intValue());
-                i1.setPosition(0);
-                i2.setPosition(1);
-                i3.setPosition(2);
-                list1.add(i1);
-                list1.add(i2);
-                list1.add(i3);
-                battle.setPlayerOneTeam(list1);
-                if (!battle.isPlayerOneStart()) {
-                    battle.drawPlayerOneEnergy(3);
-                } else {
-                    battle.drawPlayerOneEnergy(1);
-                }
-                savedBattle = this.battleService.save(battle);
-    	        LOG.info("SAVED BATTLE:: " + savedBattle.toString());
-    	        return new Gson().toJson("WAITING FOR OPPONENTS");
+            ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
+            CharacterInstance i1 = new CharacterInstance();
+            CharacterInstance i2 = new CharacterInstance();
+            CharacterInstance i3 = new CharacterInstance();
+            i1.setCharacterId(characterId1.intValue());
+            i2.setCharacterId(characterId2.intValue());
+            i3.setCharacterId(characterId3.intValue());
+            i1.setPosition(3);
+            i2.setPosition(4);
+            i3.setPosition(5);
+            list1.add(i1);
+            list1.add(i2);
+            list1.add(i3);
+            battle.setPlayerTwoTeam(list1);
+            battle.setPlayerIdTwo(playerId.intValue());
+            if (battle.isPlayerOneStart()) {
+                battle.drawPlayerTwoEnergy(3);
             } else {
-                ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
-                CharacterInstance i1 = new CharacterInstance();
-                CharacterInstance i2 = new CharacterInstance();
-                CharacterInstance i3 = new CharacterInstance();
-                i1.setCharacterId(characterId1.intValue());
-                i2.setCharacterId(characterId2.intValue());
-                i3.setCharacterId(characterId3.intValue());
-                i1.setPosition(3);
-                i2.setPosition(4);
-                i3.setPosition(5);
-                list1.add(i1);
-                list1.add(i2);
-                list1.add(i3);
-	            battle.setPlayerTwoTeam(list1);
-	            battle.setPlayerIdTwo(playerId.intValue());
-	            if (battle.isPlayerOneStart()) {
-	                battle.drawPlayerTwoEnergy(3);
-	            } else {
-	                battle.drawPlayerTwoEnergy(1);
-	            }
-	            savedBattle = this.battleService.save(battle);
+                battle.drawPlayerTwoEnergy(1);
+            }
+
+            ArrayList<Character> characters = new ArrayList<Character>();
+            List<Integer> characterIds = battle.getPlayerOneTeam().stream().map(CharacterInstance::getCharacterId).collect(Collectors.toList());
+            for (Integer id : characterIds) {
+                characters.add(this.characterService.findById(id).get());
+            }
+        	List<Integer> characterIds2 = battle.getPlayerTwoTeam().stream().map(CharacterInstance::getCharacterId).collect(Collectors.toList());
+            for (Integer id : characterIds2) {
+                characters.add(this.characterService.findById(id).get());
+            }
+            battle.setBattleCharacters(characters);
+            savedBattle = this.battleService.save(battle);
             
-	            LOG.info("SAVED BATTLE:: " + savedBattle.toString());
-	            ArrayList<Character> characters = new ArrayList<Character>();
-	            List<Integer> characterIds = battle.getPlayerOneTeam().stream().map(CharacterInstance::getCharacterId).collect(Collectors.toList());
-	            for (Integer id : characterIds) {
-	                characters.add(this.characterService.findById(id).get());
-	            }
-	        	List<Integer> characterIds2 = battle.getPlayerTwoTeam().stream().map(CharacterInstance::getCharacterId).collect(Collectors.toList());
-	            for (Integer id : characterIds2) {
-	                characters.add(this.characterService.findById(id).get());
-	            }
-	            Player playerOne = this.playerService.findById(Integer.valueOf(battle.getPlayerIdOne())).get();
-	        	Player playerTwo = this.playerService.findById(Integer.valueOf(battle.getPlayerIdTwo())).get();
-	            LOG.info("Match Made between {} and {}", playerOne.getDisplayName(), playerTwo.getDisplayName());
-	            String characterJson = new Gson().toJson(characters);
-	            String battleJson = new Gson().toJson(savedBattle);
-	            String playerOneJson = new Gson().toJson(playerOne);
-	            String playerTwoJson = new Gson().toJson(playerTwo);
-	            if (battleJson != null && playerOne != null && playerTwo != null && characterJson != null) {
-	                String responseJson = "{\"type\": \"INIT\", \"battle\": " + battleJson + ",\"playerOne\": " + playerOneJson + ",\"playerTwo\": " + playerTwoJson + ",\"characters\": " + characterJson + "}";
-	                return responseJson;
-	            } else {
-	            	return new Gson().toJson("ERROR");
-	            }
+            LOG.info("SAVED BATTLE:: " + savedBattle.toString());
+            
+            Player playerOne = this.playerService.findById(Integer.valueOf(battle.getPlayerIdOne())).get();
+        	Player playerTwo = this.playerService.findById(Integer.valueOf(battle.getPlayerIdTwo())).get();
+            LOG.info("Match Made between {} and {}", playerOne.getDisplayName(), playerTwo.getDisplayName());
+            String characterJson = new Gson().toJson(characters);
+            String battleJson = new Gson().toJson(savedBattle);
+            String playerOneJson = new Gson().toJson(playerOne);
+            String playerTwoJson = new Gson().toJson(playerTwo);
+            
+            if (battleJson != null && playerOne != null && playerTwo != null && characterJson != null) {
+                String responseJson = "{\"type\": \"INIT\", \"battle\": " + battleJson + ",\"playerOne\": " + playerOneJson + ",\"playerTwo\": " + playerTwoJson + ",\"characters\": " + characterJson + "}";
+                return responseJson;
+            } else {
+            	return new Gson().toJson("ERROR");
             }
         } else {
 	        Battle battle = new Battle();
@@ -191,8 +165,8 @@ public class BattleMessageService {
         
         // deal out more energy at the end
         if (bPost.getTurn() != 1) {
+        	int count = 0;
 	        if (playerId == b.getPlayerIdOne()) {
-	        	int count = 0;
 	        	for (CharacterInstance c : bPost.getPlayerTwoTeam()) {
 	        		if (!c.isDead()) {
 	        			count++;
@@ -200,7 +174,6 @@ public class BattleMessageService {
 	        	}
 	        	bPost.drawPlayerTwoEnergy(count);
 	        } else {
-	        	int count = 0;
 	        	for (CharacterInstance c : bPost.getPlayerOneTeam()) {
 	        		if (!c.isDead()) {
 	        			count++;
@@ -232,12 +205,26 @@ public class BattleMessageService {
 
     public String handleCostCheckMessage(Map valueMap) {
         LOG.info("Cost Check");
-        int i = Integer.parseInt(valueMap.get("playerId").toString());
-        Battle b = battleService.getByPlayerId(i);
+        int playerId = Integer.parseInt(valueMap.get("playerId").toString());
+        Battle b = battleService.getByPlayerId(playerId);
         
+        if (playerId == b.getPlayerIdOne()) {
+        	for (CharacterInstance c : b.getPlayerOneTeam()) {
+        		b.getBattleCharacters();
+        		
+        	}
+        } else {
+        	for (CharacterInstance c : b.getPlayerTwoTeam()) {
+
+        	}
+        }
+        
+        
+        // respond with an array of the abilities that CAN be cast
+        // currently responding with all
         Integer[] a = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
         
-        String responseJson = "{\"type\": \"CCHECK\", \"playerId\": " + i + ", \"usable\": " + new Gson().toJson(a) + "}";
+        String responseJson = "{\"type\": \"CCHECK\", \"playerId\": " + playerId + ", \"usable\": " + new Gson().toJson(a) + "}";
         return responseJson;
     }
 }
