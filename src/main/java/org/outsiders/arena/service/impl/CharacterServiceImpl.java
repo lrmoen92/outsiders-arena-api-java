@@ -1,8 +1,12 @@
 package org.outsiders.arena.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.Character;
+import org.outsiders.arena.domain.CharacterInstance;
 import org.outsiders.arena.repository.CharacterRepository;
 import org.outsiders.arena.service.CharacterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +43,18 @@ public class CharacterServiceImpl
   {
     return this.repo.existsById(id);
   }
+  
+  public List<Character> getCharactersForBattle(Battle battle) {
+	List<Character> temp = new ArrayList<>();
+	for (CharacterInstance c : battle.getPlayerOneTeam()) {
+		temp.add(this.findById(c.getCharacterId()).get());
+	}
+	for (CharacterInstance c : battle.getPlayerTwoTeam()) {
+		temp.add(this.findById(c.getCharacterId()).get());
+	}
+	return temp;
+  };
+
   
   public Iterable<Character> findAll()
   {

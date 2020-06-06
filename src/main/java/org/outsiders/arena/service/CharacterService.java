@@ -1,7 +1,9 @@
 package org.outsiders.arena.service;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.Character;
 
 public abstract interface CharacterService
@@ -13,6 +15,8 @@ public abstract interface CharacterService
   public abstract Optional<Character> findById(Integer paramInteger);
   
   public abstract boolean existsById(Integer paramInteger);
+  
+  public abstract List<Character> getCharactersForBattle(Battle battle);
   
   public abstract Iterable<Character> findAll();
   

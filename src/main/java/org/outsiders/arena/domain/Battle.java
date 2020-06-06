@@ -1,13 +1,17 @@
 package org.outsiders.arena.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.util.NRG;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Table
 public class Battle
@@ -20,11 +24,12 @@ public class Battle
   private int arenaId;
   private int playerIdOne;
   private int playerIdTwo;
-  private List<Character> battleCharacters;
   private List<CharacterInstance> playerOneTeam;
   private List<CharacterInstance> playerTwoTeam;
   private Map<String, Integer> playerOneEnergy;
   private Map<String, Integer> playerTwoEnergy;
+  private Map<String, Integer> playerOneEnergySpent;
+  private Map<String, Integer> playerTwoEnergySpent;
   
   @JsonGetter
   public boolean getPlayerOneVictory()
@@ -170,11 +175,4 @@ public void setPlayerTwoEnergy(Map<String, Integer> playerTwoEnergy) {
 	this.playerTwoEnergy = playerTwoEnergy;
 }
 
-public List<Character> getBattleCharacters() {
-	return battleCharacters;
-}
-
-public void setBattleCharacters(List<Character> battleCharacters) {
-	this.battleCharacters = battleCharacters;
-}
 }

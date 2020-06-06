@@ -6,7 +6,7 @@ CREATE KEYSPACE outsiders_arena WITH REPLICATION = {
 CREATE TYPE outsiders_arena.effect (
     duration int,
     avatarurl text,
-	instanceid text,
+    instanceid text,
     description text,
     origincharacter int,
     targetcharacter int,
@@ -49,20 +49,6 @@ CREATE TYPE outsiders_arena.ability (
     aoeallyeffects list<frozen<effect>>
 );
 
-CREATE TABLE outsiders_arena.battle (
-	id int PRIMARY KEY,
-    playeronestart boolean,
-    status text,
-    turn int,
-    arenaid int,
-    playeridone int,
-    playeridtwo int,
-    playeroneteam list<frozen<characterinstance>>,
-    playertwoteam list<frozen<characterinstance>>,
-    playeroneenergy map<text, int>,
-    playertwoenergy map<text, int>
-);
-
 CREATE TABLE outsiders_arena.character (
     id int PRIMARY KEY,
     avatarurl text,
@@ -77,8 +63,22 @@ CREATE TABLE outsiders_arena.character (
     slotd frozen<ability>
 );
 
+CREATE TABLE outsiders_arena.battle (
+    id int PRIMARY KEY,
+    playeronestart boolean,
+    status text,
+    turn int,
+    arenaid int,
+    playeridone int,
+    playeridtwo int,
+    playeroneteam list<frozen<characterinstance>>,
+    playertwoteam list<frozen<characterinstance>>,
+    playeroneenergy map<text, int>,
+    playertwoenergy map<text, int>
+);
+
 CREATE TABLE outsiders_arena.player (
-	id int PRIMARY KEY,
+    id int PRIMARY KEY,
     displayname text,
     avatarurl text,
     level int
