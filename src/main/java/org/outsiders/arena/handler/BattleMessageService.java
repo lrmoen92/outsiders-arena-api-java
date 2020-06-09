@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.outsiders.arena.domain.Ability;
@@ -27,7 +28,7 @@ import com.google.gson.Gson;
 
 @Service
 public class BattleMessageService {
-    private static Logger LOG = LoggerFactory.getLogger(BattleMessageService.class);
+    public static Logger LOG = LoggerFactory.getLogger(BattleMessageService.class);
     @Autowired
     protected BattleService battleService;
     @Autowired
@@ -129,15 +130,44 @@ public class BattleMessageService {
         }
     }
 
-    public String handleEnergyTradeMessage(Map valueMap) {
+    public String handleEnergyTradeMessage(Map valueMap) throws Exception {
         LOG.info("Energy Trade");
-        int i = getMapEntryAsInt("playerId", valueMap);
-        Map m = (Map) valueMap.get("spent");
-        String s = valueMap.get("chosen").toString();
-        Battle b = battleService.getByPlayerId(i);
+        int playerId = getMapEntryAsInt("playerId", valueMap);
+        Map<String, Double> m = (Map) valueMap.get("spent");
+        String chosen = valueMap.get("chosen").toString();
+        Battle b = battleService.getByPlayerId(playerId);
+        
+        if(b.getPlayerIdOne() == playerId) {
+        	for (Entry<String, Double> e : m.entrySet()) {
+        		String energy = e.getKey();
+        		int amount = (int) Math.round(e.getValue());
+        		int newVal = b.getPlayerOneEnergy().get(energy) - amount;
+        		if (newVal < 0) {
+        			throw new Exception();
+        		}
+        		b.getPlayerOneEnergy().put(energy,  newVal);
+        	}
+        	
+        	int i =b.getPlayerOneEnergy().get(chosen);
+        	b.getPlayerOneEnergy().put(chosen, i+1);
+        } else {
+        	
+        	for (Entry<String, Double> e : m.entrySet()) {
+        		String energy = e.getKey();
+        		int amount = (int) Math.round(e.getValue());
+        		int newVal = b.getPlayerTwoEnergy().get(energy) - amount;
+        		if (newVal < 0) {
+        			throw new Exception();
+        		}
+        		b.getPlayerTwoEnergy().put(energy,  newVal);
+        	}
+        	
+        	int i =b.getPlayerTwoEnergy().get(chosen);
+        	b.getPlayerTwoEnergy().put(chosen, i+1);
+    	}
         
         b = battleService.save(b);
-        String responseJson = "{\"type\": \"ETRADE\", \"playerId\": " + i + ", \"battle\": " + new Gson().toJson(b) + "}";
+        String responseJson = "{\"type\": \"ETRADE\", \"playerId\": " + playerId + ", \"battle\": " + new Gson().toJson(b) + "}";
         return responseJson;
     }
     
@@ -151,8 +181,13 @@ public class BattleMessageService {
         //first time this happens is the record of the "end" of turn 1
         b.setTurn(b.getTurn() + 1);
         // do battle logic here
+        Battle bPost;
+        if (playerId == b.getPlayerIdOne()) {
+            bPost = nrg.handleTurns(b, dto, true);
+        } else {
+            bPost = nrg.handleTurns(b, dto, false);
+        }
         
-        Battle bPost = nrg.handleTurns(b, dto);
         // for each ability/effect, in the correct order, resolve the effects.
         
         // basically logic and rules for all the stats and qualities
@@ -203,6 +238,8 @@ public class BattleMessageService {
         // respond with an array of the abilities that CAN be cast
         // currently responding with all
         Integer[] a = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+        
+        // this should also check cooldowns huh.
     	
     	
         LOG.info("Cost Check");

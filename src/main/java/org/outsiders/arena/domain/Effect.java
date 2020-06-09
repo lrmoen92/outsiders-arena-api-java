@@ -12,7 +12,7 @@ public class Effect
   private int duration = 1;
   private String avatarUrl = "https://i.imgur.com/CiUI6Sg.png";
   // used to identify an effect within the context of a battle
-  private String instanceId = UUID.randomUUID().toString();
+  private int instanceId;
   private String name;
   private String condition;
   private String quality;
@@ -157,11 +157,11 @@ public void setVisible(boolean visible) {
 	this.visible = visible;
 }
 
-public String getInstanceId() {
+public int getInstanceId() {
 	return instanceId;
 }
 
-public void setInstanceId(String instanceId) {
+public void setInstanceId(int instanceId) {
 	this.instanceId = instanceId;
 }
 

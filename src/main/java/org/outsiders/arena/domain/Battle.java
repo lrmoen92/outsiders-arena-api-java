@@ -28,8 +28,6 @@ public class Battle
   private List<CharacterInstance> playerTwoTeam;
   private Map<String, Integer> playerOneEnergy;
   private Map<String, Integer> playerTwoEnergy;
-  private Map<String, Integer> playerOneEnergySpent;
-  private Map<String, Integer> playerTwoEnergySpent;
   
   @JsonGetter
   public boolean getPlayerOneVictory()

@@ -9,17 +9,17 @@ public class BattleTurnDTO
 	Map<String, Integer> spentEnergy;
 
 	// list of all effects by id?
-	List<String> effectIds;
+	List<Effect> effects;
   
 	// list of abilityID -> list of targetIDs (all positional ie:2nd char ability 3 is abilityID 6)
 	List<AbilityTargetDTO> abilities;
 
-	public List<String> getEffectIds() {
-		return effectIds;
+	public List<Effect> getEffects() {
+		return effects;
 	}
 
-	public void setEffectIds(List<String> effectIds) {
-		this.effectIds = effectIds;
+	public void setEffects(List<Effect> effects) {
+		this.effects = effects;
 	}
 
 	public List<AbilityTargetDTO> getAbilities() {

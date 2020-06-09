@@ -6,7 +6,7 @@ CREATE KEYSPACE outsiders_arena WITH REPLICATION = {
 CREATE TYPE outsiders_arena.effect (
     duration int,
     avatarurl text,
-    instanceid text,
+    instanceid int,
     description text,
     origincharacter int,
     targetcharacter int,
@@ -28,7 +28,6 @@ CREATE TYPE outsiders_arena.characterinstance (
     location int,
     characterid int,
     dead boolean,
-    highlighted boolean,
     effects list<frozen<effect>>
 );
 

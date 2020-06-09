@@ -9,6 +9,7 @@ import java.util.Random;
 import org.outsiders.arena.domain.AbilityTargetDTO;
 import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.BattleTurnDTO;
+import org.outsiders.arena.domain.Effect;
 import org.outsiders.arena.domain.Energy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,22 +57,35 @@ public class NRG
 	  return previous;
   }
   
-  public Battle handleTurns(Battle battle, BattleTurnDTO dto) {
+  public Battle handleTurns(Battle battle, BattleTurnDTO dto, boolean isPlayerOne) {
 	  LOG.info("BATTLE:" + battle.toString());
+	   
+	  // all energy spent (mostly to verify randoms) 
+	  Map<String, Integer> spentEnergy = dto.getSpentEnergy();
+	  // update player's energy in battle
+	  
+	  if (isPlayerOne) {
+		  spentEnergy.forEach((s,i) -> {
+			 int prev = battle.getPlayerOneEnergy().get(s);
+			 battle.getPlayerOneEnergy().put(s, prev - i);
+		  });
+	  } else {
+		  spentEnergy.forEach((s,i) -> {
+			 int prev = battle.getPlayerTwoEnergy().get(s);
+			 battle.getPlayerTwoEnergy().put(s, prev - i);
+		  });
+	  }
 	  
 	  // abilities, targets, origin character
 	  List<AbilityTargetDTO> moves = dto.getAbilities();
-	  
-	  // all energy spent (mostly to verify randoms) 
-	  Map<String, Integer> spentEnergy = dto.getSpentEnergy();
+	  // 3 ability target DTOs in the proper order
 	  
 	  // order to resolve effects in (action bar)
-	  List<String> effectIds = dto.getEffectIds();
+	  // we are probably assigning these here (ints) (negative numbers are new abilities)
+	  List<Effect> effectIds = dto.getEffects();
+	  // resolve all of these in order, if negative pull next abilityTargetDTO
 	  
-	  moves.forEach(move -> {
-		  move.getAbility();
-		  move.getTargets();
-	  });
+	  
 	  
 	  return battle;
   }

@@ -14,17 +14,6 @@ public class CharacterInstance
   private int characterId;
   private List<Effect> effects = Collections.emptyList();
   private boolean dead = false;
-  private boolean highlighted = false;
-  
-  public boolean isHighlighted()
-  {
-    return this.highlighted;
-  }
-  
-  public void setHighlighted(boolean highlighted)
-  {
-    this.highlighted = highlighted;
-  }
   
   public boolean isDead()
   {
