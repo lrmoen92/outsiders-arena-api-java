@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @UserDefinedType
 public class Ability
 {
@@ -33,7 +35,95 @@ public class Ability
     this.aoe = aoe;
   }
   
+  @JsonIgnore
+  public boolean isPhysical() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.isPhysical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.isPhysical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.isPhysical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.isPhysical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.isPhysical()) {
+			  return true;
+		  }
+	  }
+	  return false;
+  }
   
+  @JsonIgnore
+  public boolean isMagical() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.isMagical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.isMagical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.isMagical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.isMagical()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.isMagical()) {
+			  return true;
+		  }
+	  }
+	  return false;
+  }
+  
+  @JsonIgnore
+  public boolean isAffliction() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.isAffliction()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.isAffliction()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.isAffliction()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.isAffliction()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.isAffliction()) {
+			  return true;
+		  }
+	  }
+	  return false;
+  }
   
   public String getName()
   {
@@ -115,16 +205,6 @@ public class Ability
   public void setAoeEnemyEffects(List<Effect> aoeEnemyEffects)
   {
     this.aoeEnemyEffects = aoeEnemyEffects;
-  }
-  
-  public List<Effect> getAoeAlliedEffects()
-  {
-    return this.aoeAllyEffects;
-  }
-  
-  public void setAoeAlliedEffects(List<Effect> aoeAlliedEffects)
-  {
-    this.aoeAllyEffects = aoeAlliedEffects;
   }
   
   public void setAoe(boolean aoe)

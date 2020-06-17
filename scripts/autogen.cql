@@ -15,7 +15,9 @@ CREATE TYPE outsiders_arena.effect (
     conditional boolean,
     physical boolean,
     magical boolean,
+    affliction boolean,
     visible boolean,
+    stacks boolean,
     condition text,
     statmods map<text, int>,
     quality text
@@ -24,6 +26,10 @@ CREATE TYPE outsiders_arena.effect (
 CREATE TYPE outsiders_arena.characterinstance (
     hp int,
     position int,
+    cooldownOne int,
+    cooldownTwo int,
+    cooldownThree int,
+    cooldownFour int,
     playeronecharacter boolean,
     location int,
     characterid int,

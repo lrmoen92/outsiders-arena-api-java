@@ -31,7 +31,13 @@ extends SocketHandler {
     }
 
     public void processMessage(TextMessage message) throws Exception {
-    	Map m = new Gson().fromJson((String)message.getPayload(), Map.class);
+    	LOG.info("Literally Anything");
+    	LOG.info(message.toString());
+    	LOG.info(message.getPayload());
+    	// map representing json sent in
+    	Map m = new Gson().fromJson(message.getPayload(), Map.class);
+    	
+    	//create response
     	WebSocketMessage msg = this.createTextMessage(m);
     	
     	boolean twoPlayersMessage = false;
@@ -53,7 +59,9 @@ extends SocketHandler {
     }
 
     public String processMapEntry(Map valueMap) throws Exception {
-		switch (valueMap.get("type").toString()) {
+    	String type = valueMap.get("type").toString();
+    	LOG.info(type);
+		switch (type) {
 		    case "MATCH_MAKING": 
 		      LOG.info("Match Making...");
 		      return this.battleMessageService.handleMatchmakingMessage(valueMap);

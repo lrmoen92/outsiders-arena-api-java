@@ -6,8 +6,9 @@ public class AbilityTargetDTO {
 	
 	// all positional
 	Ability ability;
-	CharacterInstance character;
+	Integer characterPosition;
 	List<Integer> targetPositions;
+	Integer abilityPosition;
 	
 	public Ability getAbility() {
 		return ability;
@@ -15,11 +16,23 @@ public class AbilityTargetDTO {
 	public void setAbility(Ability ability) {
 		this.ability = ability;
 	}
-	public List<Integer> getTargets() {
+	public Integer getCharacterPosition() {
+		return characterPosition;
+	}
+	public void setCharacterPosition(Integer characterPosition) {
+		this.characterPosition = characterPosition;
+	}
+	public List<Integer> getTargetPositions() {
 		return targetPositions;
 	}
-	public void setTargets(List<Integer> targets) {
-		this.targetPositions = targets;
+	public void setTargetPositions(List<Integer> targetPositions) {
+		this.targetPositions = targetPositions;
+	}
+	public Integer getAbilityPosition() {
+		return abilityPosition;
+	}
+	public void setAbilityPosition(Integer abilityPosition) {
+		this.abilityPosition = abilityPosition;
 	}
 
 }
