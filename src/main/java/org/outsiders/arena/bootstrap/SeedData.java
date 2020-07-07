@@ -539,4 +539,79 @@ public class SeedData
 	  c = this.characterService.save(c);
 	  return c;
   }
+  
+  private Character makeTristane() {
+	  // EFFECTS 1
+	  List<Effect> effects = buildEffects(null, 1, 
+			  "Backstab", "This unit took damage from darts", "/assets/holly4.png", 
+			  true, false, false, false, false, true, false,
+			  buildStat(Stat.DAMAGE, 15), null, null);
+	  
+	  // ABILITY 1
+	  List<Ability> test = buildAbilities(null,
+			  true, false, false, true,
+			  Cost.oneDex, 1,
+			  "Backstab", "/assets/geddy1.png",
+			  "Geddy tosses darts at all enemies, dealing 15 damage",
+			  null, null, null, effects, null);
+	  
+	  // EFFECTS 2
+	  List<Effect> effects1 = buildEffects(null, 2,
+			  "Guildmaster", "This unit will gain 10 shields.", "/assets/geddy2.png",
+			  true, false, false, true, false, true, false,
+			  buildStat(Stat.SHIELD_GAIN, 10), null, null);
+	  
+	  // ABILITY 2
+	  test = buildAbilities(test,
+			  false, true, false, false,
+			  Cost.free, 4,
+			  "Guildmaster", "/assets/geddy2.png",
+			  "Geddy inspires an ally for 2 turns, giving them 10 shields each turn.",
+			  null, null, effects1, null, null);
+	  
+	  // EFFECTS 3
+	  List<Effect> effects2 = buildEffects(null, 2,
+			  "Scheme", "This unit is following their Geas, and cannot become invulnerable.", "/assets/geddy3.png",
+			  false, true, false, false, false, true, false,
+			  null, Quality.VULNERABLE, null);
+	  
+	  effects2 = buildEffects(effects2, 2,
+			  "Scheme", "This unit is following their Geas, and is stunned.", "/assets/geddy3.png",
+			  false, true, false, false, false, true, false,
+			  null, Quality.STUNNED, null);
+	  
+	  // ABILITY 3
+	  test = buildAbilities(test,
+			  true, false, false, false,
+			  Cost.twoArc, 4,
+			  "Scheme", "/assets/geddy3.png",
+			  "Geddy gives one unit a quest, causing them to be stunned and unable to become invulnerable for 2 turns.",
+			  effects2, null, null, null, null);
+	  
+	  // EFFECTS 4
+	  List<Effect> effects3 = buildEffects(null, 1,
+			  "Untrackable", "Geddy is being loud.  He's invulnerable.", "/assets/geddy4.png",
+			  true, false, false, false, false, true, false,
+			  null, Quality.INVULNERABLE, null);
+	  
+	  // ABILITY 4
+	  test = buildAbilities(test,
+			  false, false, true, false,
+			  Cost.oneRan, 4,
+			  "Distracting Performance", "/assets/geddy4.png",
+			  "Geddy makes a scene, going invulnerable",
+			  null, effects3, null, null, null);	  
+	  
+	  Character c = new Character();
+	  c.setId(5);
+	  c.setName("Guildmaster Tristane");
+	  c.setAvatarUrl("");
+	  c.setSlot1(test.get(0));
+	  c.setSlot2(test.get(1));
+	  c.setSlot3(test.get(2));
+	  c.setSlot4(test.get(3));
+	  
+	  c = this.characterService.save(c);
+	  return c;
+  }
 }

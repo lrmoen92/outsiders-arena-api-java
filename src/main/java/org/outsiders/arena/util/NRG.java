@@ -466,7 +466,9 @@ public class NRG
 	  
 	  if (!hiddenPass && !effect.isVisible()) {
 		  // dont resolve hidden effects the turn they're used.  check for them later
-	  } else if (((isConditional && passesConditional) || !isConditional) && !interrupted) {
+		  // but we still have to apply them
+	  } else
+		  if (((isConditional && passesConditional) || !isConditional) && !interrupted) {
 		  
 		  // analyze and set character flags based on the below execution.
 		  
@@ -773,7 +775,9 @@ public class NRG
 		  }
 	  }
 
-	  if (effect.getInstanceId() <= 0 && ((isConditional && passesConditional) || !isConditional)) {
+	  if (effect.getInstanceId() <= 0 && 
+	  	(((isConditional && passesConditional) || !isConditional) || 
+	  			(!hiddenPass && !effect.isVisible()))) {
 		  // pass by memory WAS fucking me here, huh...
 		  BattleEffect newEffect = new BattleEffect(effect);
 		  // it's new
