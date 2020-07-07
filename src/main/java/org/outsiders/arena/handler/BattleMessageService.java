@@ -1,6 +1,7 @@
 package org.outsiders.arena.handler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map.Entry;
 import org.outsiders.arena.domain.Ability;
 import org.outsiders.arena.domain.AbilityTargetDTO;
 import org.outsiders.arena.domain.Battle;
+import org.outsiders.arena.domain.BattleEffect;
 import org.outsiders.arena.domain.BattleTurnDTO;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.CharacterInstance;
@@ -59,14 +61,12 @@ public class BattleMessageService {
         Integer characterId3 = getMapEntryAsInt("char3", valueMap);
         Integer playerId = getMapEntryAsInt("playerId", valueMap);
         Integer arenaId = getMapEntryAsInt("arenaId", valueMap);
-        String opponentName = getMapEntryAsString("opponentName", valueMap);
-    	Battle battle = this.battleService.getByPlayerDisplayName(opponentName);
+    	Battle battle = this.battleService.getByArenaId(arenaId);
         if (battle == null) {
 	        battle = new Battle();
 	        battle.setId(this.nrg.randomInt());
 	        battle.setArenaId(arenaId);
 	        battle.setPlayerIdOne(playerId.intValue());
-	        savedBattle = this.battleService.save(battle);
 	        ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
 	        CharacterInstance i1 = new CharacterInstance();
 	        CharacterInstance i2 = new CharacterInstance();
@@ -189,13 +189,10 @@ public class BattleMessageService {
         b.setTurn(b.getTurn() + 1);
         // check if duration is 0, if so, remove it
         
-
-        // do battle logic here
-        Battle bPost = nrg.handleTurns(b, dto, isPlayerOne);
         
         // countdown cooldowns by one
         if (isPlayerOne) {
-	        for (CharacterInstance c: bPost.getPlayerOneTeam()) {
+	        for (CharacterInstance c: b.getPlayerOneTeam()) {
 	        	int one = c.getCooldownOne();
 	        	int two = c.getCooldownTwo();
 	        	int three = c.getCooldownThree();
@@ -214,7 +211,7 @@ public class BattleMessageService {
 	        	}
 	        }
         } else {
-	        for (CharacterInstance c: bPost.getPlayerTwoTeam()) {
+	        for (CharacterInstance c: b.getPlayerTwoTeam()) {
 	        	int one = c.getCooldownOne();
 	        	int two = c.getCooldownTwo();
 	        	int three = c.getCooldownThree();
@@ -233,91 +230,75 @@ public class BattleMessageService {
 	        	}
 	        }
         }
+
+
+        // do battle logic here
+        Battle bPost = nrg.handleTurns(b, dto, isPlayerOne);
         
 
-        for (CharacterInstance c: bPost.getPlayerOneTeam()) {
-        	List<Effect> oldList = c.getEffects();
-            List<Effect> newList = new ArrayList<>();
-        	if (oldList.size() > 0) {
-        		for (Effect e: oldList) {
-        			if (
-    					(e.getOriginCharacter() < 3 && isPlayerOne) ||
-    					(e.getOriginCharacter() > 2 && !isPlayerOne)
-        					) {
-	        			int dur = e.getDuration();
-	        			if (e.getDuration() != 0) {
-	        				if (e.getDuration() < 0) {
-	        					if (e.getStatMods().get(Stat.SHIELDS) != null) {
-	    	            			newList.add(e);
-	        					} else {
-	        						// dont add back a dead shields effect
-	        					}
-	        				} else {
-			        			e.setDuration(dur - 1);
-		            			newList.add(e);
-	        				}
-	        			}
-        			} else {
-        				if (e.getDuration() < 0) {
-        					if (e.getStatMods().get(Stat.SHIELDS) != null) {
-    	            			newList.add(e);
-        					} else {
-        						// dont add back a dead shields effect
-        					}
-        				} else if (e.getDuration() == 0) {
-        					// TODO: this might break everything
-        					// OR IT FIXED EVERYTHING??
-        				} else {
-	            			newList.add(e);
-        				}
-        			}
-        			
-        		}
-        	}
-        	c.setEffects(newList);
+        if (!isPlayerOne) {
+            for (CharacterInstance c: b.getPlayerOneTeam()) {
+            	c.setFlags(new ArrayList<>());
+            	List<BattleEffect> currentEffects = c.getEffects();
+        		currentEffects.removeIf((BattleEffect e) -> {
+        			return (e.getOriginCharacter() < 3 && e.getDuration() == 999);
+        		});
+            }
+            for (CharacterInstance c: b.getPlayerTwoTeam()) {
+            	c.setFlags(new ArrayList<>());
+            	List<BattleEffect> currentEffects = c.getEffects();
+        		currentEffects.removeIf((BattleEffect e) -> {
+        			return (e.getOriginCharacter() < 3 && e.getDuration() == 999);
+        		});
+            }
+        } else {
+            for (CharacterInstance c: b.getPlayerOneTeam()) {
+            	c.setFlags(new ArrayList<>());
+            	List<BattleEffect> currentEffects = c.getEffects();
+        		currentEffects.removeIf((BattleEffect e) -> {
+        			return (e.getOriginCharacter() > 2 && e.getDuration() == 999);
+        		});
+            }
+            for (CharacterInstance c: b.getPlayerTwoTeam()) {
+            	c.setFlags(new ArrayList<>());
+            	List<BattleEffect> currentEffects = c.getEffects();
+        		currentEffects.removeIf((BattleEffect e) -> {
+        			return (e.getOriginCharacter() > 2 && e.getDuration() == 999);
+        		});
+            }
         }
         
-        for (CharacterInstance c: bPost.getPlayerTwoTeam()) {
-        	List<Effect> oldList = c.getEffects();
-            List<Effect> newList = new ArrayList<>();
-        	if (oldList.size() > 0) {
-        		for (Effect e: oldList) {
-        			if (
-    					(e.getOriginCharacter() < 3 && isPlayerOne) ||
-    					(e.getOriginCharacter() > 2 && !isPlayerOne)
-        					) {
-	        			int dur = e.getDuration();
-	        			if (e.getDuration() != 0) {
-	        				if (e.getDuration() < 0) {
-	        					if (e.getStatMods().get(Stat.SHIELDS) != null) {
-	    	            			newList.add(e);
-	        					} else {
-	        						// dont add back a dead shields effect
-	        					}
-	        				} else {
-			        			e.setDuration(dur - 1);
-		            			newList.add(e);
-	        				}
-	        			}
-        			} else {
-        				if (e.getDuration() < 0) {
-        					if (e.getStatMods().get(Stat.SHIELDS) != null) {
-    	            			newList.add(e);
-        					} else {
-        						// dont add back a dead shields effect
-        					}
-        				} else if (e.getDuration() == 0) {
-        					// TODO: this might break everything
-        					// OR IT FIXED EVERYTHING??
-        				} else {
-	            			newList.add(e);
-        				}
-        			}
-        		}
-        	}
-        	c.setEffects(newList);
-        }
+        List<CharacterInstance> team = isPlayerOne? bPost.getPlayerOneTeam() : bPost.getPlayerTwoTeam();
+	  	  // set abilities Cooldowns after all is said and done
+	  	  for (AbilityTargetDTO atDTO : dto.getAbilities()) {
+	  		  int cd = atDTO.getAbility().getCooldown();
+	  		  int index2 = atDTO.getAbilityPosition();
+	  		  int index;
+	  		  if (index2 > 7) {
+	  			  index = 2;
+	  		  } else if (index2 > 3) {
+	  			  index = 1;
+	  		  } else {
+	  			  index = 0;
+	  		  }
+	  		  index2++;
+	  		  CharacterInstance cha = team.get(index);
+	  		  if (index2 % 4 == 0) {
+	  			  cha.setCooldownFour(cd);
+	  		  } else if (index2 % 4 == 1) {
+	  			  cha.setCooldownOne(cd);
+	  		  } else if (index2 % 4 == 2) {
+	  			  cha.setCooldownTwo(cd);
+	  		  } else if (index2 % 4 == 3) {
+	  			  cha.setCooldownThree(cd);
+	  		  } else {
+	  			  throw new Exception();
+	  		  }
+	  		  team.set(index, cha);
+	  	  }
         
+        // just gotta write an exception here for damaging effects.  if duration is 0, and effect is dmg, then dont add it.
+
         
         // for each ability/effect, in the correct order, resolve the effects.
         // basically logic and rules for all the stats qualities and conditions
@@ -329,6 +310,7 @@ public class BattleMessageService {
         // also pass back a map of (position, list<effect>) so the frontend can put them in their proper spots easier
         // then frontend can just take the proper positions to display on the turnEffectsMap
         
+        // also null out old effects here since we dead a f
         // deal out more energy at the end
         if (bPost.getTurn() != 1) {
         	int count = 0;
@@ -336,6 +318,8 @@ public class BattleMessageService {
 	        	for (CharacterInstance c : bPost.getPlayerTwoTeam()) {
 	        		if (!c.isDead()) {
 	        			count++;
+	        		} else {
+	        			c.setEffects(new ArrayList<>());
 	        		}
 	        	}
 	        	bPost.drawPlayerTwoEnergy(count);
@@ -343,6 +327,8 @@ public class BattleMessageService {
 	        	for (CharacterInstance c : bPost.getPlayerOneTeam()) {
 	        		if (!c.isDead()) {
 	        			count++;
+	        		} else {
+	        			c.setEffects(new ArrayList<>());
 	        		}
 	        	}
 	        	bPost.drawPlayerOneEnergy(count);
@@ -363,7 +349,6 @@ public class BattleMessageService {
 
         AbilityTargetDTO dto = mapper.convertValue(valueMap.get("abilityTargetDTO"), AbilityTargetDTO.class);
 
-        int abPos = dto.getAbilityPosition();
         int charPos = dto.getCharacterPosition();
         // this should be empty VV
         // set it up to return everything, and filter it below
@@ -378,9 +363,12 @@ public class BattleMessageService {
     	tarPos.add(5, -1);
         
         Battle b = battleService.getByPlayerId(playerId);
+        
         boolean isPlayerOne = b.getPlayerIdOne() == playerId;
+        
         List<CharacterInstance> team;
         List<CharacterInstance> enemyTeam;
+        
         if (isPlayerOne) {
         	team = b.getPlayerOneTeam();
         	enemyTeam = b.getPlayerTwoTeam();
@@ -390,23 +378,24 @@ public class BattleMessageService {
         	enemyTeam = b.getPlayerOneTeam();
         	teamPos = charPos - 3;
         }
-//        List<Character> c = characterService.getCharactersForBattle(b);
+        
         Ability a = dto.getAbility();
         if(a.isAoe()) {
             if(a.isEnemy()) {
             	for (CharacterInstance ch : enemyTeam) {
-            		boolean canBe = this.canBeTargeted(ch.getEffects(), a.getAoeEnemyEffects());
-            		if (canBe) {
-            			tarPos.set(ch.getPosition(), ch.getPosition());
+            		if (!ch.isDead()) {
+                		if (this.canBeTargeted(ch.getEffects(), a.getAoeEnemyEffects())) {
+                			tarPos.set(ch.getPosition(), ch.getPosition());
+                		}
             		}
-                	// write a method that takes in a list of effects on a character instance, also passes in ability to check for piercing and shit
-//                    	and checks for anything that would prevent targeting, and if so, sets character position in array to -1
             	}
             }
             if (a.isAlly()) {
             	// do whole team here, null it out later in self if not the case
             	for (CharacterInstance ch : team) {
-        			tarPos.set(ch.getPosition(), ch.getPosition());
+            		if (!ch.isDead()) {
+            			tarPos.set(ch.getPosition(), ch.getPosition());
+            		}
             	}
             }
             if (!a.isSelf()) {
@@ -417,18 +406,19 @@ public class BattleMessageService {
         	// SINGLE TARGET
             if(a.isEnemy()) {
             	for (CharacterInstance ch : enemyTeam) {
-            		boolean canBe = this.canBeTargeted(ch.getEffects(), a.getEnemyEffects());
-            		if (canBe) {
-            			tarPos.set(ch.getPosition(), ch.getPosition());
+            		if (!ch.isDead()) {
+                		if (this.canBeTargeted(ch.getEffects(), a.getEnemyEffects())) {
+                			tarPos.set(ch.getPosition(), ch.getPosition());
+                		}
             		}
-                	// write a method that takes in a list of effects on a character instance, also passes in ability to check for piercing and shit
-//                    	and checks for anything that would prevent targeting, and if so, sets character position in array to -1
             	}
             }
             if (a.isAlly()) {
             	// do whole team here
             	for (CharacterInstance ch : team) {
-        			tarPos.set(ch.getPosition(), ch.getPosition());
+            		if (!ch.isDead()) {
+            			tarPos.set(ch.getPosition(), ch.getPosition());
+            		}
             	}
             	// remove self from ally list
             	tarPos.set(charPos, -1);
@@ -595,7 +585,7 @@ public class BattleMessageService {
     		boolean physStunned = false;
     		boolean magStunned = false;
     		
-    		for (Effect e : instance.getEffects()) {
+    		for (BattleEffect e : instance.getEffects()) {
     			if (Quality.STUNNED.equals(e.getQuality())) {
     				// might have to check conditionals here
     				// TODO: CONDITIONALS
@@ -735,12 +725,13 @@ public class BattleMessageService {
     	return resultMap;
     }
     
-    public boolean canBeTargeted(List<Effect> existingEffects, List<Effect> targetingEffects) {
+    public boolean canBeTargeted(List<BattleEffect> existingEffects, List<Effect> targetingEffects) {
     	boolean canBe = true;
     	// check for invulnerable, untargetable, and conditionals
     	
     	// conditional.hasquality is the condition but we probably don't need to check too many conditionals for targets, more like qualities.
-    	for (Effect effect : existingEffects) {
+
+		for (BattleEffect effect : existingEffects) {
     		// if enemy is invulnerable
     		if (Quality.INVULNERABLE.equals(effect.getQuality())) {
     			// check for invuln piercing
@@ -757,36 +748,30 @@ public class BattleMessageService {
     				}
     			}
     			// check for vulnerable which cancels
-    			for (Effect existingEffect : existingEffects) {
+    			for (BattleEffect existingEffect : existingEffects) {
     				if (Quality.VULNERABLE.equals(existingEffect.getQuality())) {
     					canBe = true;
     					break;
     				}
     			}
     		}
-    		if (Quality.UNTARGETABLE.equals(effect.getQuality())) {
-    			// check for untargetbale piercing
-    			for (Effect targetingEffect : targetingEffects) {
-    				if (targetingEffect.getStatMods() != null) {
-    					if (targetingEffect.getStatMods().get(Stat.TRUE_DAMAGE) == null) {
-    						canBe = false;
-    					} else {
-    						canBe = true;
-    						break;
-    					}
-    				} else {
-    					canBe = false;
-    				}
-    			}
-    			// check for targetable which cancels
-    			for (Effect existingEffect : existingEffects) {
-    				if (Quality.TARGETABLE.equals(existingEffect.getQuality())) {
-    					canBe = true;
-    					break;
-    				}
-    			}
-    		}
     	}
+		
+
+		for (BattleEffect effect : existingEffects) {
+			if (Quality.UNTARGETABLE.equals(effect.getQuality())) {
+				// check for untargetable
+				canBe = false;
+				// check for vulnerable which cancels
+				for (BattleEffect existingEffect : existingEffects) {
+					if (Quality.TARGETABLE.equals(existingEffect.getQuality())) {
+						canBe = true;
+						break;
+					}
+				}
+			}
+		}
+		
     	// set up canBe based on the list of effects and the ability
     	
     	return canBe;

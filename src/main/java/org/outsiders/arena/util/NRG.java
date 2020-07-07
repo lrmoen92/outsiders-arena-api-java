@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.h2.expression.ConditionNot;
 import org.h2.util.StringUtils;
 import org.outsiders.arena.domain.Ability;
 import org.outsiders.arena.domain.AbilityTargetDTO;
 import org.outsiders.arena.domain.Battle;
+import org.outsiders.arena.domain.BattleEffect;
 import org.outsiders.arena.domain.BattleTurnDTO;
 import org.outsiders.arena.domain.CharacterInstance;
+import org.outsiders.arena.domain.Conditional;
 import org.outsiders.arena.domain.Effect;
 import org.outsiders.arena.domain.Energy;
 import org.outsiders.arena.domain.Quality;
@@ -113,13 +116,17 @@ public class NRG
 	  // update player's energy in battle
 	  
 	  // ACTUALLY SPENDS THE ENERGY
-	  spentEnergy.forEach((s,i) -> {
-		 int prev = energy.get(s);
-		 energy.put(s, prev - i);
-	  });
+	  if (spentEnergy.get(Energy.STRENGTH) > 0 ||
+		  spentEnergy.get(Energy.DEXTERITY) > 0 ||
+		  spentEnergy.get(Energy.ARCANA) > 0 ||
+		  spentEnergy.get(Energy.DIVINITY) > 0) {
+		  
+		  spentEnergy.forEach((s,i) -> {
+			 int prev = energy.get(s);
+			 energy.put(s, prev - i);
+		  });
+	  }
 
-	  
-	  // TODO: LOGAN WE'RE BASICALLY DOWN TO HERE
 	  // abilities, targets, origin character
 	  List<AbilityTargetDTO> moves = dto.getAbilities();
 	  // 3 ability target DTOs in the proper order
@@ -130,12 +137,12 @@ public class NRG
 	  
 	  // instanceID is negative for chosen abilities, for the cancel button
 	  // these will have instance ID's if they're duration effects
-	  List<Effect> effects = dto.getEffects();
+	  List<BattleEffect> effects = dto.getEffects();
 	  // ^ these effects having things like TargetCharacter, OriginCharacter, InstanceID and the like, are important and therefore must be assigned when we set a new Effect
 	  // THIS COMMENT HERE LOGAN VV
 	  // resolve all of these effects in order, if -1 pull next abilityTargetDTO
 	  int counter = 0;
-	  for (Effect effect : effects) {
+	  for (BattleEffect effect : effects) {
 		  if (effect.getInstanceId() == -1) {
 			  AbilityTargetDTO atDTO = moves.get(counter);
 			  
@@ -162,6 +169,7 @@ public class NRG
 			  
 			  counter++;
 		  } else {
+			  
 			  int origin = effect.getOriginCharacter();
 			  // this is broken for AOE V 
 			  int target = effect.getTargetCharacter();
@@ -179,45 +187,65 @@ public class NRG
 			  }
 			  // use effect.getTargetPosition and getOriginPosition to find these characters
 			  
-			  this.applyEffectToCharacter(effect, targetCharacter, originCharacter, enemyEnergy, energy, effect.getInstanceId());
+			  this.applyEffectToCharacter(effect, targetCharacter, originCharacter, enemyEnergy, energy, effect.getInstanceId(), false, false);
 			  // this.applyEffectToCharacters ?? probably
 			  // this part will come second... and I imagine be just a method or copy of what I write above
 		  }
 	  }
-	  // BRAIN TIME BRO, LITERALLY EVERYTHING ELSE MOSTLY IS THERE OR NEEDS A BRAIN TO TEST
 	  
-	  
-	  // TODO: for all active effects if duration is 0 remove it
-	  
-	  
-	  
-	  // set abilities Cooldowns after all is said and done
-	  for (AbilityTargetDTO atDTO : moves) {
-		  int cd = atDTO.getAbility().getCooldown();
-		  int index2 = atDTO.getAbilityPosition();
-		  int index;
-		  if (index2 > 7) {
-			  index = 2;
-		  } else if (index2 > 3) {
-			  index = 1;
-		  } else {
-			  index = 0;
+	  // TODO: V  we're currently doing this for ALL effects
+      // check opponent's hidden effects (non counters)
+	  // (from either player, based on flags map), 
+	  for (CharacterInstance c : team) {
+		  for (BattleEffect e : c.getEffects()) {
+			  if (!e.isVisible() && !Quality.COUNTERED.equals(e.getQuality()) && 
+					  (isPlayerOne && e.getOriginCharacter() > 2 || !isPlayerOne && e.getOriginCharacter() < 3)) {
+				  
+				  int origin = e.getOriginCharacter();
+				  int target = e.getTargetCharacter();
+				  CharacterInstance targetCharacter;
+				  CharacterInstance originCharacter;
+				  if (origin > 2) {
+					  originCharacter = battle.getPlayerTwoTeam().get(origin - 3);
+				  } else {
+					  originCharacter = battle.getPlayerOneTeam().get(origin);
+				  }
+				  if (target > 2) {
+					  targetCharacter = battle.getPlayerTwoTeam().get(target - 3);
+				  } else {
+					  targetCharacter = battle.getPlayerOneTeam().get(target);
+				  }
+				  this.applyEffectToCharacter(e, targetCharacter, originCharacter, energy, enemyEnergy, e.getInstanceId(), true, false);
+			  }
 		  }
-		  index2++;
-		  CharacterInstance cha = team.get(index);
-		  if (index2 % 4 == 0) {
-			  cha.setCooldownFour(cd);
-		  } else if (index2 % 4 == 1) {
-			  cha.setCooldownOne(cd);
-		  } else if (index2 % 4 == 2) {
-			  cha.setCooldownTwo(cd);
-		  } else if (index2 % 4 == 3) {
-			  cha.setCooldownThree(cd);
-		  } else {
-			  throw new Exception();
-		  }
-		  team.set(index, cha);
 	  }
+	  for (CharacterInstance c : enemyTeam) {
+		  for (BattleEffect e : c.getEffects()) {
+			  if (!e.isVisible() && !Quality.COUNTERED.equals(e.getQuality()) && (isPlayerOne && e.getOriginCharacter() > 2 || !isPlayerOne && e.getOriginCharacter() < 3)) {
+				  
+				  int origin = e.getOriginCharacter();
+				  int target = e.getTargetCharacter();
+				  CharacterInstance targetCharacter;
+				  CharacterInstance originCharacter;
+				  if (origin > 2) {
+					  originCharacter = battle.getPlayerTwoTeam().get(origin - 3);
+				  } else {
+					  originCharacter = battle.getPlayerOneTeam().get(origin);
+				  }
+				  if (target > 2) {
+					  targetCharacter = battle.getPlayerTwoTeam().get(target - 3);
+				  } else {
+					  targetCharacter = battle.getPlayerOneTeam().get(target);
+				  }
+				  this.applyEffectToCharacter(e, targetCharacter, originCharacter, energy, enemyEnergy, e.getInstanceId(), true, false);
+			  }
+		  }
+	  }
+
+	  // TODO: then clear the flags for next turn
+	  
+	  
+
 	  
 	  return battle;
   }
@@ -227,54 +255,73 @@ public class NRG
 	  int randomInt = this.randomInt() + 1;
 	  if(a.isAoe()) {
 		  if(a.isEnemy()) {
-          	a.getAoeEnemyEffects().forEach(e -> {
-          		this.applyEffectToCharacters(e, enemies, self, enemyEnergy, energy, targetPositions, randomInt);
-          	});
+//	    		if (enemyHasCounter or iHaveCounterFromEnemy && abilityHasDamagingEffect) {
+//	      			// remove and show the counter was used 
+			  		// ORR CHANGE THIS IFF TO JUST PASS A BOOLEAN TO METHOD BELOW FOR COUNTERED EFFECTS ??
+//	      		} else {
+	              	a.getAoeEnemyEffects().forEach(e -> {
+	              		this.applyEffectToCharacters(new BattleEffect(e), enemies, self, enemyEnergy, energy, targetPositions, randomInt, true);
+	              	});
+//	      		}
+
           }
 		  if (a.isAlly()) {
-          	a.getAoeAllyEffects().forEach(e -> {
-          		this.applyEffectToCharacters(e, allies, self, enemyEnergy, energy, targetPositions, randomInt);
-          	});
+//			  if (iHaveCounterFromEnemy) {
+//				  
+//			  } else {
+		          	a.getAoeAllyEffects().forEach(e -> {
+		          		this.applyEffectToCharacters(new BattleEffect(e), allies, self, enemyEnergy, energy, targetPositions, randomInt, true);
+		          	});
+//			  }
           }
+          if (a.isSelf() && !a.isAlly()) {
+        	a.getSelfEffects().forEach(e -> {
+          		this.applyEffectToCharacter(new BattleEffect(e), self, self, enemyEnergy, energy, randomInt, false, true);
+          	});
+    	  }
       } else {
       	// SINGLE TARGET
 
-          if (a.isSelf()) {
-        	a.getSelfEffects().forEach(e -> {
-          		this.applyEffectToCharacter(e, self, self, enemyEnergy, energy, randomInt);
-          	});
-    	  }
+
           if(a.isEnemy()) {
-          	a.getEnemyEffects().forEach(e -> {
-          		this.applyEffectToCharacters(e, enemies, self, enemyEnergy, energy, targetPositions, randomInt);
-          	});
+//	    		if (enemyHasCounter && abilityHasDamagingEffect) {
+//	      			// remove and show the counter was used
+//	      		} else {
+		          	a.getEnemyEffects().forEach(e -> {
+		          		this.applyEffectToCharacters(new BattleEffect(e), enemies, self, enemyEnergy, energy, targetPositions, randomInt, true);
+		          	});
+//	      		}
           }
           if (a.isAlly()) {
           	a.getAllyEffects().forEach(e -> {
-          		this.applyEffectToCharacters(e, allies, self, enemyEnergy, energy, targetPositions, randomInt);
+          		this.applyEffectToCharacters(new BattleEffect(e), allies, self, enemyEnergy, energy, targetPositions, randomInt, true);
           	});
           }
-
+          if (a.isSelf()) {
+        	a.getSelfEffects().forEach(e -> {
+          		this.applyEffectToCharacter(new BattleEffect(e), self, self, enemyEnergy, energy, randomInt, false, true);
+          	});
+    	  }
       }
 	  
   };
   
-  public void applyEffectToCharacters(Effect effect, List<CharacterInstance> characters, CharacterInstance fromCharacter, 
-		  Map<String, Integer> enemyEnergy, Map<String, Integer> energy, List<Integer> targetPositions, int randomInt) {
+  public void applyEffectToCharacters(BattleEffect effect, List<CharacterInstance> characters, CharacterInstance fromCharacter, 
+		  Map<String, Integer> enemyEnergy, Map<String, Integer> energy, List<Integer> targetPositions, int randomInt, boolean firstCast) {
 
 	  for(CharacterInstance c: characters) {
 		  if (targetPositions.contains(c.getPosition())) {
-			  this.applyEffectToCharacter(effect, c, fromCharacter, enemyEnergy, energy, randomInt);
+			  this.applyEffectToCharacter(effect, c, fromCharacter, enemyEnergy, energy, randomInt, false, firstCast);
 		  }
 	  }
 	  
   };
   
-  public void applyEffectToCharacter(Effect effect, CharacterInstance character, CharacterInstance fromCharacter, 
-		  Map<String, Integer> enemyEnergy, Map<String, Integer> energy, int randomInt) {
-	  List<Effect> current = character.getEffects();
-	  List<Effect> currentFrom = fromCharacter.getEffects();
-	  boolean interruptable = false;
+  public void applyEffectToCharacter(BattleEffect effect, CharacterInstance targetCharacter, CharacterInstance fromCharacter, 
+		  Map<String, Integer> enemyEnergy, Map<String, Integer> energy, int randomInt, boolean hiddenPass, boolean firstCast) {
+	  List<BattleEffect> currentTargetEffects = targetCharacter.getEffects();
+	  List<BattleEffect> currentFromEffects = fromCharacter.getEffects();
+	  boolean interrupted = false;
 	  boolean hasMods = false;
 	  boolean isEnergyChange = false;
 
@@ -286,9 +333,17 @@ public class NRG
 	  boolean isDmg = false;
 	  boolean isHeal = false;
 	  boolean isShield = false;
+	  boolean isStun = false;
+	  boolean isPhysStun = false;
+	  boolean isMagStun = false;
+	  boolean isReveal = false;
+	  
+	  boolean isVisible = effect.isVisible();
+	  
 	  boolean isStunned = false;
 	  boolean isPhysStunned = false;
 	  boolean isMagStunned = false;
+	  
 	  boolean isShieldGain = false;
 	  boolean isAffliction = false;
 	  boolean shieldsApplied = false;
@@ -296,12 +351,22 @@ public class NRG
 	  boolean targetVulnerable = false;
 	  boolean isDamagable = true;
 	  
+	  boolean hasQuality = false;
+	  boolean hasStatMods = false;
+	  boolean nonDmg = true;
+	  
+	  boolean atkFlag = false;
+	  boolean dmgFlag = false;
+	  boolean bufFlag = false;
+	  boolean debFlag = false;
+	  boolean kilFlag = false;
+	  
 	  int shields = 0;
 	  int gainAmt = 0;
 	  int totalIn = 0;
 	  int totalAr = 0;
 	  
-	  for (Effect e : currentFrom) {
+	  for (BattleEffect e : currentFromEffects) {
 		  if (Quality.STUNNED.equals(e.getQuality())) {
 			  isStunned = true;
 		  }
@@ -312,7 +377,7 @@ public class NRG
 			  isMagStunned = true;
 		  }
 	  }
-	  for (Effect e : current) {
+	  for (BattleEffect e : currentTargetEffects) {
 		  if (Quality.INVULNERABLE.equals(e.getQuality())) {
 			  targetInvulnerable = true;
 		  }
@@ -321,42 +386,126 @@ public class NRG
 		  }
 	  }
 
-	  
+	  isDamagable = !targetInvulnerable || (targetInvulnerable && targetVulnerable);
 	  boolean isConditional = effect.isConditional();
-	  boolean conditional = false;
+	  boolean passesConditional = false;
 	  if (isConditional) {
-		  // ACTUALLY CHECK Effect.getCondition() here, somehow
+		  String condition = effect.getCondition();
+		  String[] conditions = condition.split("_");
+		  String character = conditions[0];
+		  String operator = conditions[1];
+		  CharacterInstance thisChar;
+		  if ("TARGET".equals(character)) {
+			  thisChar = targetCharacter;
+		  } else {
+			  thisChar = fromCharacter;
+		  }
 		  
-//		  conditional = true;
+		  if ("AFFECTEDBY".equals(operator)) {
+			  String effectName = conditions[2];
+			  if (conditions.length == 4) {
+				  int stacks = Integer.parseInt(conditions[3]);
+				  for (Effect e : thisChar.getEffects()) {
+					  if (Quality.AFFECTED_BY(effectName, stacks).equals(e.getQuality())) {
+						  passesConditional = true;
+						  break;
+					  }
+				  }
+			  } else {
+				  for (Effect e : thisChar.getEffects()) {
+					  if (Quality.AFFECTED_BY(effectName).equals(e.getQuality())) {
+						  passesConditional = true;
+						  break;
+					  }
+				  }
+			  }
+			  
+		  } else if ("IS".equals(operator)) {
+			  String qualityName = conditions[2];
+			  for (Effect e : thisChar.getEffects()) {
+				  if (qualityName.equals(e.getQuality())) {
+					  passesConditional = true;
+					  break;
+				  }
+			  }
+		  } else if ("WAS".equals(operator) || "DID".equals(operator)) {
+				  String flagName = conditions[2];
+				  for (String flag : thisChar.getFlags()) {
+					  if (flagName.equals(flag)) {
+						  passesConditional = true;
+						  break;
+					  }
+				  }
+		  }
+		  // TODO: basically just this for conditionals?? and maybe even fainne's hidden one
+		  // check character instance flags, which will be set below, when they occur.
+		  // dont overthink this.  (just watch out for ACTUAL counters later, fainne's ability wont counter so it wont be a problem)
+		  // can be a "WAS, DID, 
+		  
+		  // THESE WILL BE EASY
+		  // AFFECTED_BY, AFFECTED_BY_stacks, and IS_QUALITY
+		  // if it doesn't pass set to false and will be ignored below
 	  }
 	  boolean isInterruptable = effect.isInterruptable();
 	  if (isInterruptable) {
-		  if (isStunned) {
-			  interruptable = true;
+		  if (isStunned) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+			  interrupted = true;
 		  }
 		  if(effect.isPhysical() && isPhysStunned) {
-			  interruptable = true;
+			  interrupted = true;
 		  }
 		  if (effect.isMagical() && isMagStunned) {
-			  interruptable = true;
+			  interrupted = true;
 		  }
 	  }
 	  
 	  // TODO: here for conditionals
 	  // effect.getCondition();
 	  // checking of conditionals
-	  if (conditional) {
-		  // just don't do anything
-	  } else if (interruptable) {
 		  
-	  } else {
+	  
+	  if (!hiddenPass && !effect.isVisible()) {
+		  // dont resolve hidden effects the turn they're used.  check for them later
+	  } else if (((isConditional && passesConditional) || !isConditional) && !interrupted) {
+		  
+		  // analyze and set character flags based on the below execution.
+		  
+		  if (!StringUtils.isNullOrEmpty(effect.getQuality())) {
+			  hasQuality = true;
+			  isPhysStun = Quality.PHYSICAL_STUNNED.equals(effect.getQuality());
+			  isMagStun = Quality.MAGICAL_STUNNED.equals(effect.getQuality());
+			  isStun = Quality.STUNNED.equals(effect.getQuality()) || isPhysStun || isMagStun;
+			  isReveal = Quality.REVEALED.equals(effect.getQuality());
+			  if (isReveal) {
+				  for (BattleEffect effectEnded : currentTargetEffects) {
+					  if (!effectEnded.isVisible()) {
+						  // their hidden effect is ending, remove it as normal but replace it with a 1 turn blank effect that's not hidden
+						  effectEnded.setDescription(effectEnded.getName() + " has ended.");
+						  effectEnded.setQuality(null);
+						  effectEnded.setStatMods(Collections.emptyMap());
+						  effectEnded.setCondition(null);
+						  effectEnded.setConditional(false);
+						  // 995 code for hidden skill ending, revealed
+						  effectEnded.setDuration(995);
+						  effectEnded.setVisible(true);
+					  }
+				  }
+			  }
+		  }
 		  if (!CollectionUtils.isEmpty(effect.getStatMods())) {
+			  hasStatMods = true;
 			  boolean isDamage = effect.getStatMods().get(Stat.DAMAGE) != null;
 			  isDmg = isDamage ||
 					  effect.getStatMods().get(Stat.PIERCING_DAMAGE) != null ||
 					  effect.getStatMods().get(Stat.BONUS_DAMAGE) != null ||
 					  effect.getStatMods().get(Stat.TRUE_DAMAGE) != null;
-			  isDamagable = !targetInvulnerable || (targetInvulnerable && targetVulnerable);
+			  atkFlag = isDmg;
+			  nonDmg = !isDmg;
+			  if (targetCharacter.getPosition() - fromCharacter.getPosition() > 2) {
+				  debFlag = nonDmg;
+			  } else {
+				  bufFlag = nonDmg;
+			  }
 			  isHeal = isDamage ? effect.getStatMods().get(Stat.DAMAGE) < 0 : false;
 			  isShield = effect.getStatMods().get(Stat.SHIELDS) != null;
 			  isShieldGain = effect.getStatMods().get(Stat.SHIELD_GAIN) != null;
@@ -370,7 +519,7 @@ public class NRG
 			  //TODO:
 			  // CHECK INVULNERABLE HERE (for existing effects)
 			  //check if character has resistance, mods, boosts, etc to this type of damage
-			  for (Effect e : currentFrom) {
+			  for (BattleEffect e : currentFromEffects) {	
 				  if (isDmg && !isHeal) {
 					  if (e.getStatMods().get(Stat.DAMAGE_OUT) != null) {
 						  totalIn = totalIn + e.getStatMods().get(Stat.DAMAGE_OUT);
@@ -390,7 +539,7 @@ public class NRG
 					  }
 				  }
 			  }
-			  for (Effect e : current) {
+			  for (BattleEffect e : currentTargetEffects) {
 				  if (isShieldGain && !shieldsApplied) {
 					  gainAmt = effect.getStatMods().get(Stat.SHIELD_GAIN);
 					  if (e.getName().equals(effect.getName())) {
@@ -403,41 +552,43 @@ public class NRG
 					  }
 				  }
 				  if (isDmg && !isHeal){
-					  // TODO: check for DAMAGE_DOWN too
-					  if (e.getStatMods().get(Stat.DAMAGE_IN) != null) {
-						  totalIn = totalIn + e.getStatMods().get(Stat.DAMAGE_IN);
-						  hasMods = true;
-					  }
-					  if (e.getStatMods().get(Stat.ARMOR) != null && !isAffliction) {
-						  totalAr = totalAr + e.getStatMods().get(Stat.ARMOR);
-						  hasMods = true;
-					  }
-					  if (effect.isMagical()) {
-						  if (e.getStatMods().get(Stat.MAGICAL_DAMAGE_IN) != null) {
-							  totalIn = totalIn + e.getStatMods().get(Stat.MAGICAL_DAMAGE_IN);
+					  if (e.getStatMods() != null) {
+						  // TODO: check for DAMAGE_DOWN too
+						  if (e.getStatMods().get(Stat.DAMAGE_IN) != null) {
+							  totalIn = totalIn + e.getStatMods().get(Stat.DAMAGE_IN);
 							  hasMods = true;
 						  }
-						  if (e.getStatMods().get(Stat.MAGICAL_ARMOR) != null) {
-							  // TODO: gonna have to revisit this if magical/physical are in the
-							  // OR MAYBE NOT??
-							  totalAr = totalAr + e.getStatMods().get(Stat.MAGICAL_ARMOR);
+						  if (e.getStatMods().get(Stat.ARMOR) != null && !isAffliction) {
+							  totalAr = totalAr + e.getStatMods().get(Stat.ARMOR);
 							  hasMods = true;
 						  }
-					  }
-					  if (effect.isPhysical()) {
-						  if (e.getStatMods().get(Stat.PHYSICAL_DAMAGE_IN) != null) {
-							  totalIn = totalIn + e.getStatMods().get(Stat.PHYSICAL_DAMAGE_IN);
-							  hasMods = true;
+						  if (effect.isMagical()) {
+							  if (e.getStatMods().get(Stat.MAGICAL_DAMAGE_IN) != null) {
+								  totalIn = totalIn + e.getStatMods().get(Stat.MAGICAL_DAMAGE_IN);
+								  hasMods = true;
+							  }
+							  if (e.getStatMods().get(Stat.MAGICAL_ARMOR) != null) {
+								  // TODO: gonna have to revisit this if magical/physical are in the
+								  // OR MAYBE NOT??
+								  totalAr = totalAr + e.getStatMods().get(Stat.MAGICAL_ARMOR);
+								  hasMods = true;
+							  }
 						  }
-						  if (e.getStatMods().get(Stat.PHYSICAL_ARMOR) != null) {
-							  totalAr = totalAr + e.getStatMods().get(Stat.PHYSICAL_ARMOR);
-							  hasMods = true;
+						  if (effect.isPhysical()) {
+							  if (e.getStatMods().get(Stat.PHYSICAL_DAMAGE_IN) != null) {
+								  totalIn = totalIn + e.getStatMods().get(Stat.PHYSICAL_DAMAGE_IN);
+								  hasMods = true;
+							  }
+							  if (e.getStatMods().get(Stat.PHYSICAL_ARMOR) != null) {
+								  totalAr = totalAr + e.getStatMods().get(Stat.PHYSICAL_ARMOR);
+								  hasMods = true;
+							  }
 						  }
-					  }
-					  if (isAffliction) {
-						  if (e.getStatMods().get(Stat.AFFLICTION_DAMAGE_IN) != null) {
-							  totalIn = totalIn + e.getStatMods().get(Stat.AFFLICTION_DAMAGE_IN);
-							  hasMods = true;
+						  if (isAffliction) {
+							  if (e.getStatMods().get(Stat.AFFLICTION_DAMAGE_IN) != null) {
+								  totalIn = totalIn + e.getStatMods().get(Stat.AFFLICTION_DAMAGE_IN);
+								  hasMods = true;
+							  }
 						  }
 					  }
 				  } 
@@ -477,22 +628,29 @@ public class NRG
 				  
 				  // remove appropriate amount of shields
 				  // if heal, or target is invuln, dont mess with shields
-				  if (!isHeal && isDamagable) {
-					  for(Effect ef : current) {
-						  if (ef.getStatMods().get(Stat.SHIELDS) != null && !effect.isAffliction()) {
-							  shields = ef.getStatMods().get(Stat.SHIELDS);
-							  if (finalDamage > 0) {
-								  finalDamage = finalDamage - shields;
-								  if (finalDamage >= 0) {
-									  ef.getStatMods().remove(Stat.SHIELDS);
-								  } else if (finalDamage < 0) {
-									  ef.getStatMods().put(Stat.SHIELDS, -finalDamage);
-								      ef.setDescription("This unit has " + -finalDamage + " shields.");
-								      finalDamage = 0;
+				  if (!isHeal && isDamagable && !isAffliction) {
+					  for (BattleEffect ef : currentTargetEffects) {
+						  if (ef.getStatMods() != null) {
+							  if (ef.getStatMods().get(Stat.SHIELDS) != null) {
+								  shields = ef.getStatMods().get(Stat.SHIELDS);
+								  if (finalDamage > 0) {
+									  finalDamage = finalDamage - shields;
+									  if (finalDamage < 0) {
+										  ef.getStatMods().put(Stat.SHIELDS, -finalDamage);
+									      ef.setDescription("This unit has " + -finalDamage + " shields.");
+									      finalDamage = 0;
+									  } else {
+										  ef.setDuration(997);
+									  }
 								  }
 							  }
 						  }
 					  } 
+					  if (shields > 0 && finalDamage >= 0) {
+						  currentTargetEffects.removeIf(ex -> {
+							  return ex.getDuration() == 997;
+						  });
+					  }
 				  }
 				  int trueDmg = 0;
 				  // by putting this here, true damage trounces ALL
@@ -501,20 +659,25 @@ public class NRG
 				  }
 
 				  // actually set the final damage
-				  int oldHP = character.getHp();
+				  int oldHP = targetCharacter.getHp();
 				  // if invuln dont do any of the damage from above
 				  if (!isDamagable) {
-					  character.setHp(oldHP - trueDmg);
+					  targetCharacter.setHp(oldHP - trueDmg);
 				  } else {
-					  character.setHp(oldHP - (finalDamage + trueDmg));
+					  targetCharacter.setHp(oldHP - (finalDamage + trueDmg));
 				  }
-
+				  if (oldHP > targetCharacter.getHp()) {
+					  dmgFlag = true;
+					  if (targetCharacter.getHp() == 0) {
+						  kilFlag = true;
+					  }
+				  }
 			  }
 			  
 			  // SHIELD AND ENERGY GAIN VV
 			  if (isEnergyChange) {
 				  Map<String, Integer> targeted;
-				  if (Math.abs(character.getPosition() - fromCharacter.getPosition()) > 2) {
+				  if (Math.abs(targetCharacter.getPosition() - fromCharacter.getPosition()) > 2) {
 					  targeted = enemyEnergy;
 				  } else {
 					  targeted = energy;
@@ -568,41 +731,168 @@ public class NRG
 			  // else 
 			  if (!shieldsApplied && isShieldGain) {
 				  gainAmt = effect.getStatMods().get(Stat.SHIELD_GAIN);
-				  Effect shieldEffect = new Effect(effect);
+				  BattleEffect shieldEffect = new BattleEffect(effect);
 				  int shieldInt = this.randomInt() + 1;
 				  shieldEffect.setInstanceId(shieldInt);
+				  shieldEffect.setGroupId(randomInt);
 				  // TODO: this makes shields infinite, add check here later if we want them to fall off
 				  shieldEffect.setDuration(-1);
 				  shieldEffect.setOriginCharacter(fromCharacter.getPosition());
-				  shieldEffect.setTargetCharacter(character.getPosition());
+				  shieldEffect.setTargetCharacter(targetCharacter.getPosition());
 				  shieldEffect.getStatMods().remove(Stat.SHIELD_GAIN);
 				  shieldEffect.getStatMods().put(Stat.SHIELDS, gainAmt);
+				  shieldEffect.setInterruptable(false);
 				  shieldEffect.setDescription("This unit has " + gainAmt + " shields.");
-				  current.add(shieldEffect);
+				  currentTargetEffects.add(shieldEffect);
 			  }
 
 		  }
 		  
-		  // pass by memory WAS fucking me here, huh...
-		  Effect newEffect = new Effect(effect);
-
-		  boolean isInstant = effect.getDuration() == 0;
-		  
-		  if (effect.getDuration() != 0) {
-			  if (effect.getInstanceId() <= 0) {
-				  // it's new
-				  newEffect.setInstanceId(randomInt);
-				  // this might actually set targets properly on AoE Effects?
-				  newEffect.setOriginCharacter(fromCharacter.getPosition());
-				  newEffect.setTargetCharacter(character.getPosition());
-				  current.add(newEffect);
-			  } else {
-				  // its pre-existing
-
-			  }
-			  // it's been resolved and only lasts this turn (dmg, shield apply?)
+	  }
+	  
+	  if (firstCast) {
+		  if (atkFlag) {
+			  fromCharacter.getFlags().add(Conditional.ATTACK);
+			  targetCharacter.getFlags().add(Conditional.ATTACKED);
+		  }
+		  if (dmgFlag) {
+			  fromCharacter.getFlags().add(Conditional.DAMAGE);
+			  targetCharacter.getFlags().add(Conditional.DAMAGED);
+		  }
+		  if (bufFlag) {
+			  fromCharacter.getFlags().add(Conditional.BUFF);
+			  targetCharacter.getFlags().add(Conditional.BUFFED);
+		  }
+		  if (debFlag) {
+			  fromCharacter.getFlags().add(Conditional.DEBUFF);
+			  targetCharacter.getFlags().add(Conditional.DEBUFFED);
+		  }
+		  if (kilFlag) {
+			  fromCharacter.getFlags().add(Conditional.KILL);
+			  targetCharacter.getFlags().add(Conditional.KILLED);
 		  }
 	  }
+
+	  if (effect.getInstanceId() <= 0 && ((isConditional && passesConditional) || !isConditional)) {
+		  // pass by memory WAS fucking me here, huh...
+		  BattleEffect newEffect = new BattleEffect(effect);
+		  // it's new
+		  newEffect.setInstanceId(this.randomInt());
+		  newEffect.setGroupId(randomInt);
+		  // this might actually set targets properly on AoE Effects?
+		  newEffect.setOriginCharacter(fromCharacter.getPosition());
+		  newEffect.setTargetCharacter(targetCharacter.getPosition());
+
+		  int dur = newEffect.getDuration() - 1;
+		  if (dur > 0) {
+//			  if (isDmg || isShield) {
+			  if (!effect.isVisible()) {
+				  
+			  } else {
+				  newEffect.setDuration(dur);  
+			  }
+			  
+//			  }
+			  currentTargetEffects.add(newEffect);
+		  }
+		  if (dur == 0) {
+			  if (hasQuality || (hasStatMods && nonDmg && !isShieldGain)) {
+				  // 999 is gonna be code for (technically 0, but ends this turn) ?? we'll try it.
+				  newEffect.setDuration(999);
+				  currentTargetEffects.add(newEffect);
+			  }
+		  }
+		  // infinite effects (shield gains could move down here?  idk.  I dont love it.
+		  if (dur == -2) {
+			  newEffect.setDuration(-1);
+			  // look for existing stackables and stack them??
+			  // TODO:
+			  String newQ = newEffect.getQuality();
+			  if (!StringUtils.isNullOrEmpty(newQ)) {
+				  if (newEffect.isStacks()) {
+					  boolean set = false;
+					  for (Effect c: currentTargetEffects) {
+						  String curQ = c.getQuality();
+						  if (!StringUtils.isNullOrEmpty(curQ) && !StringUtils.isNullOrEmpty(newQ)) {
+							  if (newQ.length() < curQ.length()) {
+								  String cutCurQ = curQ.substring(0, newQ.length());
+								  // TODO: this is limiting this to 9 stacks
+								  String curStacks = curQ.substring(curQ.length() - 1);
+								  if (cutCurQ.equals(newQ) && newEffect.isStacks() ) {
+									  c.setQuality(newQ + "_" + (Integer.parseInt(curStacks) + 1));
+									  set = true;
+								  }
+							  }
+						  }
+					  }
+					  if (!set) {
+						  newEffect.setQuality(newQ + "_" + 1);
+						  currentTargetEffects.add(newEffect);
+					  }
+				  } else {
+					  currentTargetEffects.add(newEffect);
+				  }
+			  }
+		  }
+	   } else {
+			  
+			  int index = -1;
+			  int counter = 0;
+			  for (BattleEffect oldEffect : currentTargetEffects) {
+				  if (effect.getInstanceId() == oldEffect.getInstanceId()) {
+					  index = counter;
+					  break;
+				  }
+				  counter++;
+			  }
+			  if (index == -1) {
+				  // fucking i dont know... uh oh.
+			  } else {
+				  // its pre-existing
+	
+				  int dur = effect.getDuration() - 1;
+				  
+				  if (hiddenPass && !effect.isVisible()) {
+					  if (dur > 0 && dur < 900) {
+						  effect.setDuration(dur);  
+						  currentTargetEffects.set(index, effect);
+					  }
+					  if (dur == 0) {
+						  // their hidden effect is ending, remove it as normal but replace it with a 1 turn blank effect that's not hidden
+						  BattleEffect effectEnded = currentTargetEffects.get(index);
+						  effectEnded.setQuality(null);
+						  effectEnded.setStatMods(Collections.emptyMap());
+						  effectEnded.setCondition(null);
+						  effectEnded.setConditional(false);
+						  effectEnded.setDescription(effectEnded.getName() + " has ended.");
+						  // 995 code for hidden skill ending, revealed
+						  effectEnded.setDuration(995);
+						  effectEnded.setVisible(true);
+						  currentTargetEffects.set(index, effectEnded);
+					  }
+				  } else if (!hiddenPass && effect.isVisible()) {
+					  if (dur > 0 && dur < 900) {
+						  effect.setDuration(dur);  
+						  currentTargetEffects.set(index, effect);
+					  }
+					  if (dur == 994) {
+						  currentTargetEffects.remove(index);
+					  }
+					  if (dur == 0 || dur == 998) {
+						  if ((hasQuality || (hasStatMods && nonDmg && !isShieldGain)) && dur == 0) {
+							  // 999 is gonna be code for (technically 0, but ends this turn) ?? we'll try it.
+							  effect.setDuration(999);
+							  currentTargetEffects.set(index, effect);
+						  } else {
+
+							  currentTargetEffects.remove(index);
+						  }
+					  } else {
+						  // infinite effects, dur = -1 right lol.
+					  }
+				  }
+			  }
+   		}  
   }
   
   public int getTotalForEnergy(Map<String, Integer> map) {
@@ -615,6 +905,10 @@ public class NRG
   
   public int randomInt()
   {
-    return new Random().nextInt(9999999);
+    return randomInt(99999);
+  }
+  
+  public int randomInt(int in) {
+	  return new Random().nextInt(in);
   }
 }

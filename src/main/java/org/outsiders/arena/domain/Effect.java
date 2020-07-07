@@ -7,59 +7,33 @@ import java.util.UUID;
 
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
-@UserDefinedType
+@UserDefinedType("battleeffect")
 public class Effect
 {
-  private int duration = 1;
-  private String avatarUrl = "https://i.imgur.com/CiUI6Sg.png";
-  // used to identify an effect within the context of a battle
-  // set during battle logic (random number i guess, just not negative)
-  private int instanceId;
-  private String name;
-  // conditional string to meet
-  private String condition;
-  // buff or debuff
-  private String quality;
+  
+  protected String name;
   // blurb
-  private String description;
-  // only for effects on character instances (should be position based)
-  private int originCharacter;
-  private int targetCharacter;
-  private boolean interruptable = false;
-  private boolean physical = false;
-  private boolean magical = false;
-  private boolean affliction = false;
-  private boolean conditional = false;
-  private boolean visible = true;
+  protected String description;
+  protected String avatarUrl = "https://i.imgur.com/CiUI6Sg.png";
+
+  protected int duration = 1;
+  // TODO: list of conditions, list of qualities....  yeah it's ultimately better can't deny it.
+  // conditional string to meet
+  protected String condition;
+  // buff or debuff
+  protected String quality;
+  protected boolean interruptable = false;
+  protected boolean physical = false;
+  protected boolean magical = false;
+  protected boolean affliction = false;
+  protected boolean conditional = false;
+  protected boolean visible = true;
   
   // we MAYYYY not need this.  but i'm keeping it for now.
-  private boolean stacks = false;
-  private Map<String, Integer> statMods = Collections.emptyMap();
+  protected boolean stacks = false;
+  protected Map<String, Integer> statMods = Collections.emptyMap();
   
   public Effect() {}
-  
-  public Effect(Effect e) {
-	  this.duration = e.duration;
-	  this.avatarUrl = e.avatarUrl;
-	  this.instanceId = e.instanceId;
-	  this.name = e.name;
-	  this.condition = e.condition;
-	  this.quality = e.quality;
-	  this.description = e.description;
-	  this.originCharacter = e.originCharacter;
-	  this.targetCharacter = e.targetCharacter;
-	  this.interruptable = e.interruptable;
-	  this.physical = e.physical;
-	  this.magical = e.magical;
-	  this.affliction = e.affliction;
-	  this.conditional = e.conditional;
-	  this.visible = e.visible;
-	  this.stacks = e.stacks;
-	  this.statMods = new HashMap<>();
-	  for(Map.Entry<String, Integer> entry : e.getStatMods().entrySet()) {
-		  this.statMods.put(entry.getKey(), entry.getValue());
-	  }
-  }
   
   public Effect(boolean physical, boolean magical, boolean affliction, boolean interruptable, boolean conditional)
   {
@@ -70,6 +44,12 @@ public class Effect
     this.conditional = conditional;
   }
   
+	public int getDuration() {
+		return duration;
+	}
+	public void setDuration(int duration) {
+		this.duration = duration;
+	}
   public String getDescription()
   {
     return this.description;
@@ -113,16 +93,6 @@ public class Effect
     this.magical = magical;
   }
   
-  public int getDuration()
-  {
-    return this.duration;
-  }
-  
-  public void setDuration(int duration)
-  {
-    this.duration = duration;
-  }
-  
   public boolean isInterruptable()
   {
     return this.interruptable;
@@ -152,22 +122,6 @@ public class Effect
 
 
 
-public int getOriginCharacter() {
-	return originCharacter;
-}
-
-public void setOriginCharacter(int originCharacter) {
-	this.originCharacter = originCharacter;
-}
-
-public int getTargetCharacter() {
-	return targetCharacter;
-}
-
-public void setTargetCharacter(int targetCharacter) {
-	this.targetCharacter = targetCharacter;
-}
-
 public String getCondition() {
 	return condition;
 }
@@ -192,13 +146,6 @@ public void setVisible(boolean visible) {
 	this.visible = visible;
 }
 
-public int getInstanceId() {
-	return instanceId;
-}
-
-public void setInstanceId(int instanceId) {
-	this.instanceId = instanceId;
-}
 
 public String getAvatarUrl() {
 	return avatarUrl;
@@ -223,4 +170,5 @@ public boolean isStacks() {
 public void setStacks(boolean stacks) {
 	this.stacks = stacks;
 }
+
 }

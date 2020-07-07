@@ -1,5 +1,7 @@
 package org.outsiders.arena.domain;
 
+import java.util.List;
+
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
@@ -9,7 +11,10 @@ public class Character
   @PrimaryKey
   private int id;
   private String avatarUrl;
+  // use name-contains for multiple "alex"s for example
   private String name;
+  private String description;
+  private List<String> factions;
   private Ability slot1;
   private Ability slot2;
   private Ability slot3;
@@ -133,4 +138,20 @@ public class Character
   {
 	  return "Name: " + this.name + ", Id: " + this.id;
   }
+
+public String getDescription() {
+	return description;
+}
+
+public void setDescription(String description) {
+	this.description = description;
+}
+
+public List<String> getFactions() {
+	return factions;
+}
+
+public void setFactions(List<String> factions) {
+	this.factions = factions;
+}
 }

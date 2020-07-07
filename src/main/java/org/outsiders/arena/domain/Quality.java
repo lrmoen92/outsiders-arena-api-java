@@ -27,12 +27,21 @@ public class Quality
   public static final String PHYSICAL_STUNNED = "PHYSICAL_STUNNED";
   // is stunned magic skills
   public static final String MAGICAL_STUNNED = "MAGICAL_STUNNED";
+  // damaging ability is countered
+  public static final String COUNTERED = "COUNTERED";
   // get enemy effect removed
   public static final String DISPELLED = "DISPELLED";
   // get healed
   public static final String RESTORED = "RESTORED";
+  
+  // affected by ability or effect_name stacks
+  public static String AFFECTED_BY(String effectName, int stacks) {
+	  return "AFFECTEDBY_" + effectName.toUpperCase() + "_" + stacks; 
+  };
+
   // affected by ability or effect_name
   public static String AFFECTED_BY(String effectName) {
-	  return "AFFECTED_" + effectName.toUpperCase(); 
+	  return "AFFECTEDBY_" + effectName.toUpperCase(); 
   };
+  
 }

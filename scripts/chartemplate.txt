@@ -1,0 +1,149 @@
+
+Alex
+
+CD: 4 - Impulse - 1 Random Do 10 points of affliction damage for 3 turns to one enemy
+CD: 2 - Flashfreeze - 1 Dex Do 20 points of damage, and reduce an enemy's damage by 10 for 2 turns
+CD: 3 - Study Target - 2 Random Reveal (and potentially disable) hidden skills on an enemy, and increase damage they take by 10 for 2 turns
+CD: 4 - Stealth 1 Random - Go invulnerable for one turn
+
+Fainne
+
+CD: 3 - Call Lightning - 1 Div 1 Random Do 20 points of damage to one enemy for 2 turns
+CD: 0 - Zahra - 1 Str Deal 20 damage to an enemy.  If target is effected by Call Lightning, 15 more damage.
+CD: 3 - Absorb Evil - 1 Div Hidden ability on team member for 2 turns, if ally is attacked, gain 1 energy. (NOT COUNTER)
+CD: 4 - Irethis 1 Random - Go invulnerable for one turn
+
+Shinzo
+
+CD: 2 - Trident - 1 Str 1 Arc Do 45 damage to one target
+CD: 4 - Entangle - 1 Div 1 Random Do 15 points of damage to one enemy for 2 turns, stunning them for the first
+CD: 4 - Channel Energy - 1 Div Heal party 10 HP for 2 turns
+CD: 4 - Captain's Orders 1 Random - Go invulnerable for one turn
+
+Hollyanna
+
+CD: 2 - Sneak Attack 1 Random Do 15 damage, if target it stunned, 10 bonus
+CD: 3 - Eliminate 1 Dex 1 Str Do 40 dmg, if gets a kill, gives self "Bloodbath" for one turn
+CD: 3 - Fulfill Contract 2 Div Stun all enemies for one turn, If "Bloodbath", then heal 25 HP, and become stunned and untargetable for one turn (If used 3 times, Hollyanna dies)
+CD: 4 - Shadow Illusion 1 Random - Go invulnerable for one turn
+
+Geddy
+
+CD: 1 - Darts 1 Dex - 15 Damage to all enemies
+CD: 4 - Inspiration - FREE Give an ally 10 shields each turn, for 2 turns
+CD: 4 - Geas - 2 Arc Stun a unit for 2 turns, and that unit cannot go invulnerable
+CD: 4 - Suggestion 1 Random - Go invulnerable for one turn
+
+
+Tristane 
+
+CD: 1 - Backstab - dmg
+CD: 4 - Guildmaster - self buff?
+CD: 4 - Scheme - hidden skill
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Drundar 
+
+CD: 1 - Hammer Down - Piercing damage
+CD: 4 - Build Up - put shields on self
+CD: 4 - Quake - aoe dmg, and shield destruction
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Kalio 
+
+CD: 1 - Mage Armor - Give ally or self  armor and reflect damage
+CD: 4 - Dispel - remove magical effects
+CD: 4 - Research - reroll energy hanatarou style
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Ralion 
+
+CD: 1 - Extort - increase enemy costs
+CD: 4 - Lightning Bolt - hard dmg
+CD: 4 - Show of Force - dmg, lower enemy damage, or stun skills
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Imperia 
+
+CD: 1 - Sneaky Jump - Counter skills used on her
+CD: 4 - Stunning Fist - stun and dmg, if sneak jump succeeded then bonus
+CD: 4 - Flurry of Blows - dot, if sneak jump succeeded then bonus
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Millor 
+
+CD: 1 - Hold Hostage - Stun an enemy's physical skills and put shields on self
+CD: 4 - Ice Trap - put counter on enemy, do damage to them and counter if they use a damaging skill
+CD: 4 - Mutilate - dmg and increase costs on one unit
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Millor 2
+
+CD: 1 - Acid Breath - Aoe Affliction
+CD: 4 - Wing Beat - Aoe physical and go invulnerable for a turn
+CD: 4 - Snapping Bite - physical spike
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Bruce 
+
+CD: 1 - Great Leader - 
+CD: 4 - Claymore Slash -
+CD: 4 - Equip Platemail -
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Veria 
+
+CD: 1 - Cyclone
+CD: 4 - Decieve
+CD: 4 - Dimension Door
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Warren 
+
+CD: 4 - Impersonate Ally
+CD: 4 - Planeshift
+CD: 4 - Flaming Sphere
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+Irethis
+
+CD: 1 - Scorching Ray
+CD: 4 - Ignite 
+CD: 4 - 8-Layered Seal
+CD: 4 - 1 Random - Go invulnerable for one turn
+
+
+Alex 2
+
+CD: 4 - Dual Wield - 
+CD: 2 - Improved Impulse - 
+CD: 3 - Edge of Shadow (or whatever) -  
+CD: 4 - Lightning Elemental 1 Random - Go invulnerable for one turn
+
+Fainne 2
+
+CD: 3 - One With Nature - 
+CD: 0 - Call Lightning Storm - 
+CD: 3 - Scry - 
+CD: 4 - Earth Elemental 1 Random - Go invulnerable for one turn
+
+Shinzo 2
+
+CD: 2 - Fingers of Gozreh - 
+CD: 4 - The Crew - 
+CD: 4 - Gozreh's Sphere -
+CD: 4 - Air Elemental 1 Random - Go invulnerable for one turn
+
+Hollyanna 2
+
+CD: 2 - Hide in Plain Sight -
+CD: 3 - Trap Sense -
+CD: 3 - Summon Shadow -
+CD: 4 - Water Elemental 1 Random - Go invulnerable for one turn
+
+Geddy 2
+
+CD: 1 - Ice Storm -
+CD: 4 - Inspire Competence -
+CD: 4 - Rapid Fire -
+CD: 4 - Fire Elemental 1 Random - Go invulnerable for one turn

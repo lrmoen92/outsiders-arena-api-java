@@ -1,7 +1,9 @@
 package org.outsiders.arena.domain;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
@@ -16,7 +18,11 @@ public class CharacterInstance
   // player 1 (0, 1, 2) player 2 (3, 4, 5)
   private int position;
   private int characterId;
-  private List<Effect> effects = Collections.emptyList();
+  // EffectHolder class is built like this map essentially maybe even better :O
+  
+  private List<BattleEffect> effects = new ArrayList<>();
+  // store conditional flags here
+  private List<String> flags = new ArrayList<>();
   private boolean dead = false;
   
   public boolean isDead()
@@ -49,7 +55,7 @@ public class CharacterInstance
 	  if (!this.isDead()) {
 	    if (hp > 100) {
 	        this.hp = 100;
-	    } else if (hp < 0) {
+	    } else if (hp <= 0) {
 	        this.hp = 0;
 	        this.setDead(true);
 	    } else {
@@ -59,16 +65,8 @@ public class CharacterInstance
 
   }
   
-  public List<Effect> getEffects()
-  {
-    return this.effects;
-  }
   
-  public void setEffects(List<Effect> effects)
-  {
-    this.effects = effects;
-  }
-
+  
 	public int getPosition() {
 		return position;
 	}
@@ -108,4 +106,21 @@ public class CharacterInstance
 	public void setCooldownFour(int cooldownFour) {
 		this.cooldownFour = cooldownFour;
 	}
+
+	public List<BattleEffect> getEffects() {
+		return effects;
+	}
+
+	public void setEffects(List<BattleEffect> effects) {
+		this.effects = effects;
+	}
+
+	public List<String> getFlags() {
+		return flags;
+	}
+
+	public void setFlags(List<String> flags) {
+		this.flags = flags;
+	}
+
 }

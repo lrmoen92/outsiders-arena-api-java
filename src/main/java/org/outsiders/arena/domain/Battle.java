@@ -3,6 +3,7 @@ package org.outsiders.arena.domain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.util.NRG;
@@ -18,7 +19,7 @@ public class Battle
 {
   @PrimaryKey
   private int id;
-  private boolean playerOneStart = Math.random() % 2.0D == 0.0D;
+  private boolean playerOneStart = new Random().nextBoolean();
   private String status;
   private int turn = 0;
   private int arenaId;
