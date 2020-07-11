@@ -27,6 +27,10 @@ public class Stat
   public static final String MAGICAL_DAMAGE_OUT = "MAGICAL_DAMAGE_OUT";
   // aff dmg out up or down
   public static final String AFFLICTION_DAMAGE_OUT = "AFFLICTION_DAMAGE_OUT";
+
+  // costs increased (+/- random)
+  public static final String COST_CHANGE = "COST_CHANGE";
+  
   // all cooldowns up or down
   public static final String COOLDOWN_ALL = "COOLDOWN_ALL";
   // cd 1 up or down

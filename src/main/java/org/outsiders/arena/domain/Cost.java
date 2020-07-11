@@ -33,5 +33,10 @@ public class Cost {
 	  public static final List<String> twoArc = Arrays.asList(Energy.ARCANA, Energy.ARCANA);
 	  public static final List<String> twoStr = Arrays.asList(Energy.STRENGTH, Energy.STRENGTH);
 	  public static final List<String> twoDex = Arrays.asList(Energy.DEXTERITY, Energy.DEXTERITY);
+	  public static final List<String> threeRan = Arrays.asList(Energy.RANDOM, Energy.RANDOM, Energy.RANDOM);
+	  public static final List<String> threeDiv = Arrays.asList(Energy.DIVINITY, Energy.DIVINITY, Energy.DIVINITY);
+	  public static final List<String> threeArc = Arrays.asList(Energy.ARCANA, Energy.ARCANA, Energy.DIVINITY);
+	  public static final List<String> threeStr = Arrays.asList(Energy.STRENGTH, Energy.STRENGTH, Energy.STRENGTH);
+	  public static final List<String> threeDex = Arrays.asList(Energy.DEXTERITY, Energy.DEXTERITY, Energy.DEXTERITY);
 	
 }

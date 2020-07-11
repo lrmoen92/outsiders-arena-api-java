@@ -198,7 +198,7 @@ public class NRG
 	  // (from either player, based on flags map), 
 	  for (CharacterInstance c : team) {
 		  for (BattleEffect e : c.getEffects()) {
-			  if (!e.isVisible() && !Quality.COUNTERED.equals(e.getQuality()) && 
+			  if (!e.isVisible() && 
 					  (isPlayerOne && e.getOriginCharacter() > 2 || !isPlayerOne && e.getOriginCharacter() < 3)) {
 				  
 				  int origin = e.getOriginCharacter();
@@ -221,7 +221,7 @@ public class NRG
 	  }
 	  for (CharacterInstance c : enemyTeam) {
 		  for (BattleEffect e : c.getEffects()) {
-			  if (!e.isVisible() && !Quality.COUNTERED.equals(e.getQuality()) && (isPlayerOne && e.getOriginCharacter() > 2 || !isPlayerOne && e.getOriginCharacter() < 3)) {
+			  if (!e.isVisible() && (isPlayerOne && e.getOriginCharacter() > 2 || !isPlayerOne && e.getOriginCharacter() < 3)) {
 				  
 				  int origin = e.getOriginCharacter();
 				  int target = e.getTargetCharacter();
@@ -338,6 +338,12 @@ public class NRG
 	  boolean isMagStun = false;
 	  boolean isReveal = false;
 	  
+	  boolean isDmgOutIn = false;
+	  boolean isPhysDmgOutIn = false;
+	  boolean isMagDmgOutIn = false;
+	  boolean isAffDmgOutIn = false;
+	  boolean isDmgMod = false;
+	  
 	  boolean isVisible = effect.isVisible();
 	  
 	  boolean isStunned = false;
@@ -350,6 +356,8 @@ public class NRG
 	  boolean targetInvulnerable = false;
 	  boolean targetVulnerable = false;
 	  boolean isDamagable = true;
+	  
+	  
 	  
 	  boolean hasQuality = false;
 	  boolean hasStatMods = false;
@@ -518,6 +526,11 @@ public class NRG
 			  isArcanaChange = effect.getStatMods().get(Stat.ARCANA_CHANGE) != null;
 			  isDivinityChange = effect.getStatMods().get(Stat.DIVINITY_CHANGE) != null;
 			  isEnergyChange = isRandomChange || isStrengthChange || isDexterityChange || isArcanaChange || isDivinityChange;
+			  isDmgOutIn = effect.getStatMods().get(Stat.DAMAGE_IN) != null || effect.getStatMods().get(Stat.DAMAGE_OUT) != null;
+			  isPhysDmgOutIn = effect.getStatMods().get(Stat.PHYSICAL_DAMAGE_IN) != null || effect.getStatMods().get(Stat.PHYSICAL_DAMAGE_OUT) != null;
+			  isMagDmgOutIn = effect.getStatMods().get(Stat.MAGICAL_DAMAGE_IN) != null || effect.getStatMods().get(Stat.MAGICAL_DAMAGE_OUT) != null;
+			  isAffDmgOutIn = effect.getStatMods().get(Stat.AFFLICTION_DAMAGE_IN) != null || effect.getStatMods().get(Stat.AFFLICTION_DAMAGE_OUT) != null;
+			  isDmgMod = isDmgOutIn || isPhysDmgOutIn || isMagDmgOutIn || isAffDmgOutIn;
 			  //TODO:
 			  // CHECK INVULNERABLE HERE (for existing effects)
 			  //check if character has resistance, mods, boosts, etc to this type of damage
@@ -776,8 +789,12 @@ public class NRG
 	  }
 
 	  if (effect.getInstanceId() <= 0 && 
-	  	(((isConditional && passesConditional) || !isConditional) || 
-	  			(!hiddenPass && !effect.isVisible()))) {
+			  	(
+			  			((isConditional && passesConditional) || !isConditional)
+			  			|| 
+			  			(!hiddenPass && !effect.isVisible())
+				)
+		  	) {
 		  // pass by memory WAS fucking me here, huh...
 		  BattleEffect newEffect = new BattleEffect(effect);
 		  // it's new
@@ -789,20 +806,17 @@ public class NRG
 
 		  int dur = newEffect.getDuration() - 1;
 		  if (dur > 0) {
-//			  if (isDmg || isShield) {
-			  if (!effect.isVisible()) {
-				  
-			  } else {
-				  newEffect.setDuration(dur);  
+			  if (effect.isVisible()) {
+				  newEffect.setDuration(dur);
 			  }
-			  
-//			  }
 			  currentTargetEffects.add(newEffect);
 		  }
 		  if (dur == 0) {
-			  if (hasQuality || (hasStatMods && nonDmg && !isShieldGain)) {
+			  if ((hasQuality && nonDmg) || (hasStatMods && nonDmg && !isShieldGain)) {
 				  // 999 is gonna be code for (technically 0, but ends this turn) ?? we'll try it.
 				  newEffect.setDuration(999);
+				  currentTargetEffects.add(newEffect);
+			  } else if (!isVisible) {
 				  currentTargetEffects.add(newEffect);
 			  }
 		  }
@@ -872,6 +886,8 @@ public class NRG
 						  // 995 code for hidden skill ending, revealed
 						  effectEnded.setDuration(995);
 						  effectEnded.setVisible(true);
+						  effectEnded.setInterruptable(false);
+						  effectEnded.setStacks(false);
 						  currentTargetEffects.set(index, effectEnded);
 					  }
 				  } else if (!hiddenPass && effect.isVisible()) {
@@ -883,7 +899,7 @@ public class NRG
 						  currentTargetEffects.remove(index);
 					  }
 					  if (dur == 0 || dur == 998) {
-						  if ((hasQuality || (hasStatMods && nonDmg && !isShieldGain)) && dur == 0) {
+						  if (((hasQuality && nonDmg) || (hasStatMods && nonDmg && !isShieldGain)) && dur == 0) {
 							  // 999 is gonna be code for (technically 0, but ends this turn) ?? we'll try it.
 							  effect.setDuration(999);
 							  currentTargetEffects.set(index, effect);

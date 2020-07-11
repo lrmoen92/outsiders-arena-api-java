@@ -7,12 +7,6 @@ public class Quality
   public static final String STEALTHED = "STEALTHED";
   // hidden skills used by or on character revealed
   public static final String REVEALED = "REVEALED";
-  // costs increased (+1 random)
-  public static final String DISARMED = "DISARMED";
-  // costs decreased (-1 random)
-  public static final String EQUIPPED = "EQUIPPED";
-//  // this might be affected by
-//  public static final String MARKED = "MARKED";
   // immune to dmg
   public static final String INVULNERABLE = "INVULNERABLE";
   // cant reduce dmg or go invuln

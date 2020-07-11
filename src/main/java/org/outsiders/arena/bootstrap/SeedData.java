@@ -113,6 +113,7 @@ public class SeedData
 	 LOG.info("Saved new Character: " + makeShinzo().toString());
 	 LOG.info("Saved new Character: " + makeHollyanna().toString());
 	 LOG.info("Saved new Character: " + makeGeddy().toString());
+	 LOG.info("Saved new Character: " + makeTristane().toString());
   }
   
   
@@ -440,7 +441,7 @@ public class SeedData
 	  
 	  // EFFECTS 4
 	  List<Effect> effects3 = buildEffects(null, 1,
-			  "Shadow Illusion", "Hollyanna hides in shadow", "/assets/holly4.png",
+			  "Shadow Illusion", "This unit is invulnerable.", "/assets/holly4.png",
 			  true, false, false, false, false, true, false,
 			  null, Quality.INVULNERABLE, null);
 	  
@@ -541,56 +542,53 @@ public class SeedData
   }
   
   private Character makeTristane() {
+	  // phys / mag / affl / inter / cond / vis / stack
 	  // EFFECTS 1
 	  List<Effect> effects = buildEffects(null, 1, 
-			  "Backstab", "This unit took damage from darts", "/assets/holly4.png", 
+			  "Backstab", "This unit took damage from backstab", "/assets/tristane1.png", 
 			  true, false, false, false, false, true, false,
-			  buildStat(Stat.DAMAGE, 15), null, null);
+			  buildStat(Stat.DAMAGE, 40), null, null);
 	  
 	  // ABILITY 1
 	  List<Ability> test = buildAbilities(null,
-			  true, false, false, true,
-			  Cost.oneDex, 1,
-			  "Backstab", "/assets/geddy1.png",
-			  "Geddy tosses darts at all enemies, dealing 15 damage",
-			  null, null, null, effects, null);
+			  true, false, false, false,
+			  Cost.threeRan, 1,
+			  "Backstab", "/assets/tristane1.png",
+			  "Tristane sneaks behind an ally, stabbing them in the back for 40 physical damage.",
+			  effects, null, null, null, null);
 	  
 	  // EFFECTS 2
-	  List<Effect> effects1 = buildEffects(null, 2,
-			  "Guildmaster", "This unit will gain 10 shields.", "/assets/geddy2.png",
-			  true, false, false, true, false, true, false,
-			  buildStat(Stat.SHIELD_GAIN, 10), null, null);
+	  List<Effect> effects1 = buildEffects(null, 4,
+			  "Guildmaster", "This unit's costs have been reduced by one.", "/assets/tristane2.png",
+			  true, false, false, false, false, true, false,
+			  buildStat(Stat.COST_CHANGE, -1), null, null);
 	  
 	  // ABILITY 2
 	  test = buildAbilities(test,
-			  false, true, false, false,
-			  Cost.free, 4,
-			  "Guildmaster", "/assets/geddy2.png",
-			  "Geddy inspires an ally for 2 turns, giving them 10 shields each turn.",
-			  null, null, effects1, null, null);
+			  false, false, true, false,
+			  Cost.twoRan, 1,
+			  "Guildmaster", "/assets/tristane2.png",
+			  "Tristane calls in backup, reducing the costs of his abilities by one for three turns.",
+			  null, effects1, null, null, null);
 	  
 	  // EFFECTS 3
-	  List<Effect> effects2 = buildEffects(null, 2,
-			  "Scheme", "This unit is following their Geas, and cannot become invulnerable.", "/assets/geddy3.png",
-			  false, true, false, false, false, true, false,
-			  null, Quality.VULNERABLE, null);
-	  
-	  effects2 = buildEffects(effects2, 2,
-			  "Scheme", "This unit is following their Geas, and is stunned.", "/assets/geddy3.png",
-			  false, true, false, false, false, true, false,
-			  null, Quality.STUNNED, null);
+	  List<Effect> effects2 = buildEffects(null, 1,
+			  "Scheme", "If this unit uses a damaging skill, it will be countered.", "/assets/tristane3.png",
+			  true, false, false, false, true, false, false,
+			  null, Quality.COUNTERED, Conditional.TARGET_DID(Conditional.DAMAGE));
+
 	  
 	  // ABILITY 3
 	  test = buildAbilities(test,
 			  true, false, false, false,
-			  Cost.twoArc, 4,
-			  "Scheme", "/assets/geddy3.png",
-			  "Geddy gives one unit a quest, causing them to be stunned and unable to become invulnerable for 2 turns.",
+			  Cost.twoRan, 4,
+			  "Scheme", "/assets/tristane3.png",
+			  "Tristane schemes against a unit, countering any damaging skill for one turn.",
 			  effects2, null, null, null, null);
 	  
 	  // EFFECTS 4
 	  List<Effect> effects3 = buildEffects(null, 1,
-			  "Untrackable", "Geddy is being loud.  He's invulnerable.", "/assets/geddy4.png",
+			  "Untrackable", "This unit is invulnerable.", "/assets/tristane4.png",
 			  true, false, false, false, false, true, false,
 			  null, Quality.INVULNERABLE, null);
 	  
@@ -598,12 +596,12 @@ public class SeedData
 	  test = buildAbilities(test,
 			  false, false, true, false,
 			  Cost.oneRan, 4,
-			  "Distracting Performance", "/assets/geddy4.png",
-			  "Geddy makes a scene, going invulnerable",
+			  "Untrackable", "/assets/tristane4.png",
+			  "Tristane goes invulnerable, unable to be found.",
 			  null, effects3, null, null, null);	  
 	  
 	  Character c = new Character();
-	  c.setId(5);
+	  c.setId(6);
 	  c.setName("Guildmaster Tristane");
 	  c.setAvatarUrl("");
 	  c.setSlot1(test.get(0));
