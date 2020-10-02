@@ -61,7 +61,9 @@ public class SeedData
 	  e.setAvatarUrl(url);
 	  e.setDuration(duration);
 	  e.setCondition(condition);
-	  e.setStatMods(statMods);
+	  if (statMods != null) {
+		  e.setStatMods(statMods);
+	  }
 	  e.setQuality(quality);
 	  e.setVisible(visible);
 	  e.setStacks(stacks);
@@ -93,12 +95,28 @@ public class SeedData
 	  a.setName(name);
 	  a.setAbilityUrl(url);
 	  a.setCost(cost);
-	  a.setEnemyEffects(effects);
-	  a.setSelfEffects(selfEffects);
-	  a.setAllyEffects(allyEffects);
-	  a.setAoeEnemyEffects(aoeEnemyEffects);
-	  a.setAoeAllyEffects(aoeAllyEffects);
+	  if (effects != null) {
+		  a.setEnemyEffects(effects);
+	  }
+
+	  if (selfEffects != null) {
+		  a.setSelfEffects(selfEffects);
+	  }
+
+	  if (allyEffects != null) {
+		  a.setAllyEffects(allyEffects);
+	  }
+
+	  if (aoeEnemyEffects != null) {
+		  a.setAoeEnemyEffects(aoeEnemyEffects);
+	  }
+
+	  if (aoeAllyEffects != null) {
+		  a.setAoeAllyEffects(aoeAllyEffects);
+	  }
 	  a.setDescription(description);
+	  a.setTargets();
+	  a.setTypes();
 	  
 	  if (l == null) {
 		  l = new ArrayList<>();
@@ -120,8 +138,8 @@ public class SeedData
   private Character makeAlex() {
 	  // EFFECTS 1
 	  List<Effect> effects = buildEffects(null, 3, 
-			  "Impulse", "This unit is taking 10 affliction damage", "/assets/alex1.png",
-			  false, false, true, true, false, true, false,
+			  "Impulse", "This unit is taking 10 magic damage", "/assets/alex1.png",
+			  false, true, false, true, false, true, false,
 			  buildStat(Stat.DAMAGE, 10), null, null);
 	  
 	  // ABILITY 1
@@ -129,18 +147,18 @@ public class SeedData
 			  true, false, false, false,
 			  Cost.oneRan, 4,
 			  "Impulse", "/assets/alex1.png",
-			  "Alex uses Impulse to attack one enemy, dealing 10 points of affliction damage for 3 turns.",
+			  "Alex uses Impulse to attack one enemy, dealing 10 points of magic damage for 3 turns.",
 			  effects, null, null, null, null);
 	  
 	  // EFFECTS 2
 	  List<Effect> effects1 = buildEffects(null, 1,
 			  "Flash Freeze", "This unit took damage from Flash Freeze", "/assets/alex2.png",
-			  false, true, false, false, false, true, false,
+			  false, false, true, false, false, true, false,
 			  buildStat(Stat.DAMAGE, 20), null, null);
 	  
 	  effects1 = buildEffects(effects1, 2,
 			  "Flash Frozen", "This unit will do 10 less damage", "/assets/alex2.png",
-			  true, false, false, false, false, true, false,
+			  false, false, true, false, false, true, false,
 			  buildStat(Stat.DAMAGE_OUT, -10), null, null);
 	  
 	  // ABILITY 2
@@ -148,7 +166,7 @@ public class SeedData
 			  true, false, false, false,
 			  Cost.oneDex, 2,
 			  "Flash Freeze", "/assets/alex2.png",
-			  "Alex freezes one enemy with Flash Freeze, dealing 20 magic damage, and reducing their damage by 10 for 2 turns",
+			  "Alex freezes one enemy with Flash Freeze, dealing 20 affliction damage, and reducing their damage by 10 for 2 turns",
 			  effects1, null, null, null, null);
 	  
 	  // EFFECTS 3
@@ -189,7 +207,7 @@ public class SeedData
 	  Character c = new Character();
 	  c.setId(1);
 	  c.setName("Alex Drake");
-	  c.setAvatarUrl("https://i.imgur.com/L0FbVol.png");
+	  c.setAvatarUrl("/assets/alex.png");
 	  c.setSlot1(test.get(0));
 	  c.setSlot2(test.get(1));
 	  c.setSlot3(test.get(2));
@@ -220,31 +238,31 @@ public class SeedData
 	  
 	  // ABILITY 1
 	  List<Ability> test = buildAbilities(null,
-			  false, true, false, false,
+			  false, true, true, false,
 			  Cost.oneDiv, 3,
 			  "Unyielding Spirit", "/assets/fainne1.png",
-			  "Fainne's unyielding spirit supplies 1 random energy to an ally if they are attacked, for 2 turns",
+			  "Fainne's unyielding spirit supplies 1 random energy to an ally or herself if they are attacked, for 2 turns",
 			  null, null, effects, null, null);
 	  
 	  // EFFECTS 2
 	  List<Effect> effects1 = buildEffects(null, 2,
-			  "Call Lightning", "This unit is taking 20 damage", "/assets/fainne2.png",
-			  true, true, false, true, false, true, false,
-			  buildStat(Stat.DAMAGE, 20), Quality.AFFECTED_BY("Call Lightning"), null);
+			  "Call Lightning", "This unit is taking 15 damage", "/assets/fainne2.png",
+			  false, true, false, true, false, true, false,
+			  buildStat(Stat.DAMAGE, 15), Quality.AFFECTED_BY("Call Lightning"), null);
 	  
 	  // ABILITY 2
 	  test = buildAbilities(test,
 			  true, false, false, false,
-			  Cost.twoRan, 3,
+			  Cost.twoRan, 0,
 			  "Call Lightning", "/assets/fainne2.png",
-			  "Fainne summons bolts of lighting from above, dealing 20 damage to one enemy for two turns",
+			  "Fainne summons bolts of lighting from above, dealing 15 damage to one enemy for two turns",
 			  effects1, null, null, null, null);
 	  
 	  // EFFECTS 3
 	  List<Effect> effects2 = buildEffects(null, 1,
 			  "Zahra", "This unit took extra damage from Zahra", "/assets/fainne3.png",
 			  true, false, false, false, true, true, false, 
-			  buildStat(Stat.BONUS_DAMAGE, 15), null, Conditional.TARGET_AFFECTED_BY("Call Lightning"));
+			  buildStat(Stat.BONUS_DAMAGE, 10), null, Conditional.TARGET_AFFECTED_BY("Call Lightning"));
 	  
 	  effects2 = buildEffects(effects2, 1,
 			  "Zahra", "This unit took damage from Zahra", "/assets/fainne3.png",
@@ -254,9 +272,9 @@ public class SeedData
 	  // ABILITY 3
 	  test = buildAbilities(test,
 			  true, false, false, false,
-			  Cost.oneStr, 0,
+			  Cost.oneStr, 1,
 			  "Zahra", "/assets/fainne3.png",
-			  "Faine lets loose Zahra to maim one enemy for 20 dmg.  15 extra damage if target is under the effects of Call Lightning",
+			  "Fainee lets loose Zahra to maim one enemy for 20 dmg.  10 extra damage if target is under the effects of Call Lightning",
 			  effects2, null, null, null, null);
 	  
 	  // EFFECTS 4
@@ -276,7 +294,7 @@ public class SeedData
 	  Character c = new Character();
 	  c.setId(2);
 	  c.setName("Fainne");
-	  c.setAvatarUrl("https://i.imgur.com/z02peKO.png");
+	  c.setAvatarUrl("/assets/fainne.png");
 	  c.setSlot1(test.get(0));
 	  c.setSlot2(test.get(1));
 	  c.setSlot3(test.get(2));
@@ -356,7 +374,7 @@ public class SeedData
 	  Character c = new Character();
 	  c.setId(3);
 	  c.setName("Shinzo Katetsu");
-	  c.setAvatarUrl("https://i.imgur.com/onwlaKJ.png");
+	  c.setAvatarUrl("/assets/shinzo.png");
 	  c.setSlot1(test.get(0));
 	  c.setSlot2(test.get(1));
 	  c.setSlot3(test.get(2));
@@ -371,19 +389,19 @@ public class SeedData
 	  List<Effect> effects = buildEffects(null, 1, 
 			  "Sneak Attack", "Sneak Attack Damage",  "/assets/holly1.png",
 			  true, false, false, false, false, true, false,
-			  buildStat(Stat.DAMAGE, 15), null, null);
+			  buildStat(Stat.DAMAGE, 25), null, null);
 	  
-	  effects = buildEffects(effects, 1, 
-			  "Sneak Attack", "Sneak Attack Bonus Damage",  "/assets/holly1.png",
-			  true, false, false, false, true, true, false,
-			  buildStat(Stat.BONUS_DAMAGE, 10), null, Conditional.TARGET_HAS_QUALITY(Quality.STUNNED));
+//	  effects = buildEffects(effects, 1, 
+//			  "Sneak Attack", "Sneak Attack Bonus Damage",  "/assets/holly1.png",
+//			  true, false, false, false, true, true, false,
+//			  buildStat(Stat.BONUS_DAMAGE, 10), null, Conditional.TARGET_HAS_QUALITY(Quality.STUNNED));
 	  
 	  // ABILITY 1
 	  List<Ability> test = buildAbilities(null,
 			  true, false, false, false,
-			  Cost.oneRan, 2,
+			  Cost.oneRan, 3,
 			  "Sneak Attack", "/assets/holly1.png",
-			  "Hollyanna hides in the shadows, and then strikes, dealing 15 damage, and 10 bonus damage if the target is stunned.",
+			  "Hollyanna hides in the shadows, and then strikes, dealing 25 damage.",
 			  effects, null, null, null, null);
 	  
 	  // EFFECTS 2
@@ -392,7 +410,7 @@ public class SeedData
 			  true, false, false, false, false, true, false,
 			  buildStat(Stat.DAMAGE, 40), null, null);
 	  
-	  List<Effect> selfEffects1 = buildEffects(null, 2,
+	  List<Effect> selfEffects1 = buildEffects(null, 3,
 			  "Eliminate - Bloodbath", "Hollyanna is being baptised in blood, Fulfill Contract is empowered until the end of next turn.", "/assets/holly2.png",
 			  true, false, false, false, true, true, false,
 			  null, Quality.AFFECTED_BY("Bloodbath"), Conditional.USER_DID(Conditional.KILL));
@@ -400,9 +418,9 @@ public class SeedData
 	  // ABILITY 2
 	  test = buildAbilities(test,
 			  true, false, true, false,
-			  Cost.oneStrOneDex, 3,
+			  Cost.oneStrOneDex, 2,
 			  "Eliminate", "/assets/holly2.png",
-			  "Hollyanna uses raw force to inflict a mortal wound, dealing 40 damage.  If this skill kills an enemy, Fulfill Contract is empowered next turn.",
+			  "Hollyanna uses raw force to inflict a mortal wound, dealing 40 damage.  If this skill kills an enemy, Fulfill Contract is empowered for 2 turns.",
 			  effects1, selfEffects1, null, null, null);
 	  
 	  // EFFECTS 3
@@ -414,12 +432,12 @@ public class SeedData
 	  List<Effect> selfEffects2 = buildEffects(null, 1,
 			  "Fulfill Contract", "Hollyanna is untargetable.", "/assets/holly3.png",
 			  false, true, false, false, true, true, false,
-			  buildStat(Stat.DAMAGE, -40), Quality.UNTARGETABLE, Conditional.USER_AFFECTED_BY("Bloodbath"));
+			  buildStat(Stat.DAMAGE, -40), null, Conditional.USER_AFFECTED_BY("Bloodbath"));
 	  
 	  selfEffects2 = buildEffects(selfEffects2, 1,
-			  "Fulfill Contract", "Hollyanna is stunned.", "/assets/holly3.png",
+			  "Fulfill Contract", "Hollyanna is untargetable.", "/assets/holly3.png",
 			  false, true, false, false, true, true, false,
-			  null, Quality.STUNNED, Conditional.USER_AFFECTED_BY("Bloodbath"));
+			  null, Quality.UNTARGETABLE, Conditional.USER_AFFECTED_BY("Bloodbath"));
 	  
 	  selfEffects2 = buildEffects(selfEffects2, -1,
 			  "Fulfill Contract", "If this skill is used 3 times, Hollyanna dies.", "/assets/holly3.png",
@@ -436,7 +454,7 @@ public class SeedData
 			  true, false, true, true,
 			  Cost.twoDiv, 2,
 			  "Fulfill Contract", "/assets/holly3.png",
-			  "Take part in an evil deed, stunning all enemies for one turn.  If Bloodbath is active, heal 40 hp, and become stunned and untargetable for one turn.  If this skill is used 3 times, Hollyanna dies.",
+			  "Take part in an evil deed, stunning all enemies for one turn.  If Bloodbath is active, heal 40 hp, and become untargetable for one turn.  If this skill is used 3 times, Hollyanna dies.",
 			  null, selfEffects2, null, effects2, null);
 	  
 	  // EFFECTS 4
@@ -451,12 +469,12 @@ public class SeedData
 			  Cost.oneRan, 4,
 			  "Shadow Illusion", "/assets/holly4.png",
 			  "Hollyanna hides in shadow, going invulnerable for 1 turn",
-			  null, effects3, null, null, null);  
+			  null, effects3, null, null, null);
 	  
 	  Character c = new Character();
 	  c.setId(4);
 	  c.setName("Hollyanna Knox");
-	  c.setAvatarUrl("https://i.imgur.com/SeMAoFS.png");
+	  c.setAvatarUrl("/assets/holly.png");
 	  c.setSlot1(test.get(0));
 	  c.setSlot2(test.get(1));
 	  c.setSlot3(test.get(2));
@@ -484,7 +502,7 @@ public class SeedData
 	  // EFFECTS 2
 	  List<Effect> effects1 = buildEffects(null, 2,
 			  "Inspiration", "This unit will gain 10 shields.", "/assets/geddy2.png",
-			  true, false, false, true, false, true, false,
+			  false, true, false, true, false, true, false,
 			  buildStat(Stat.SHIELD_GAIN, 10), null, null);
 	  
 	  // ABILITY 2
@@ -531,7 +549,7 @@ public class SeedData
 	  Character c = new Character();
 	  c.setId(5);
 	  c.setName("Geddy Splintwalker");
-	  c.setAvatarUrl("https://i.imgur.com/EtNEXcG.png");
+	  c.setAvatarUrl("/assets/geddy.png");
 	  c.setSlot1(test.get(0));
 	  c.setSlot2(test.get(1));
 	  c.setSlot3(test.get(2));
@@ -554,12 +572,12 @@ public class SeedData
 			  true, false, false, false,
 			  Cost.threeRan, 1,
 			  "Backstab", "/assets/tristane1.png",
-			  "Tristane sneaks behind an ally, stabbing them in the back for 40 physical damage.",
+			  "Tristane sneaks behind an enemy, stabbing them in the back for 40 physical damage.",
 			  effects, null, null, null, null);
 	  
 	  // EFFECTS 2
 	  List<Effect> effects1 = buildEffects(null, 4,
-			  "Guildmaster", "This unit's costs have been reduced by one.", "/assets/tristane2.png",
+			  "Guildmaster", "Tristane's costs have been reduced by one.", "/assets/tristane2.png",
 			  true, false, false, false, false, true, false,
 			  buildStat(Stat.COST_CHANGE, -1), null, null);
 	  
@@ -603,7 +621,7 @@ public class SeedData
 	  Character c = new Character();
 	  c.setId(6);
 	  c.setName("Guildmaster Tristane");
-	  c.setAvatarUrl("");
+	  c.setAvatarUrl("/assets/tristane.png");
 	  c.setSlot1(test.get(0));
 	  c.setSlot2(test.get(1));
 	  c.setSlot3(test.get(2));

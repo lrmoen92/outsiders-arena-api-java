@@ -7,31 +7,32 @@ import java.util.UUID;
 
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @UserDefinedType("battleeffect")
 public class Effect
 {
   
   protected String name;
-  // blurb
   protected String description;
   protected String avatarUrl = "https://i.imgur.com/CiUI6Sg.png";
-
   protected int duration = 1;
-  // TODO: list of conditions, list of qualities....  yeah it's ultimately better can't deny it.
-  // conditional string to meet
-  protected String condition;
-  // buff or debuff
-  protected String quality;
+
   protected boolean interruptable = false;
   protected boolean physical = false;
   protected boolean magical = false;
   protected boolean affliction = false;
   protected boolean conditional = false;
   protected boolean visible = true;
-  
-  // we MAYYYY not need this.  but i'm keeping it for now.
   protected boolean stacks = false;
+  
+  // TODO: list of conditions, list of qualities....  yeah it's ultimately better can't deny it.
+  // conditional string to meet
+  protected String condition;
+  // buff or debuff
+  protected String quality;
   protected Map<String, Integer> statMods = Collections.emptyMap();
+ 
   
   public Effect() {}
   

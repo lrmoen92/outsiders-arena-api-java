@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.datastax.driver.core.querybuilder.Delete.Conditions;
+
 @Service
 public class NRG
 {
@@ -252,58 +254,343 @@ public class NRG
   
   public void applyAbilityToTargets(Ability a, List<CharacterInstance> allies, List<CharacterInstance> enemies, 
 		  Map<String, Integer> enemyEnergy, Map<String, Integer> energy, List<Integer> targetPositions, CharacterInstance self) throws Exception {
+	  
 	  int randomInt = this.randomInt() + 1;
+	  
+	  boolean anyEnemyHasCounter = false;
+	  boolean anyAllyHasCounter = false;
+	  boolean iHaveCounterFromEnemy = false;
+	  
+	  boolean enemyHasCounter = false;
+	  boolean allyHasCounter = false;
+	  
+	  boolean counterIsTriggered = false;
+	  
+	  BattleEffect myCounter = null;
+	  BattleEffect theirCounter = null;
+	  BattleEffect ourCounter = null;
+	  
+	  
+	  for (BattleEffect e : self.getEffects()) {
+		  boolean isFriendlyEffect = (e.getOriginCharacter() > 2 && self.getPosition() > 2) || (e.getOriginCharacter() < 3 && self.getPosition() < 3) ;
+		  boolean isNotVisible = !e.isVisible();
+		  boolean isCounter = Quality.COUNTERED.equals(e.getQuality());
+		  if (isCounter && isNotVisible && !isFriendlyEffect) {
+			  iHaveCounterFromEnemy = true;
+			  myCounter = e;
+		  }
+	  }
+	  
+	  for (CharacterInstance ally : allies) {
+		  for (BattleEffect e : ally.getEffects()) {
+			  if (allyHasCounter) {
+				  break;
+			  }
+			  boolean isFriendlyEffect = (e.getOriginCharacter() > 2 && self.getPosition() > 2) || (e.getOriginCharacter() < 3 && self.getPosition() < 3) ;
+			  boolean isNotVisible = !e.isVisible();
+			  boolean isCounter = Quality.COUNTERED.equals(e.getQuality());
+			  if (isCounter && isNotVisible && !isFriendlyEffect) {
+				  if (targetPositions.contains(ally.getPosition())) {
+					  allyHasCounter = true;
+					  ourCounter = e;
+				  }
+				  anyAllyHasCounter = true;
+				  ourCounter = e;
+			  }
+		  }
+	  }
+
+	  for (CharacterInstance enemy : enemies) {
+		  for (BattleEffect e : enemy.getEffects()) {
+			  if (enemyHasCounter) {
+				  break;
+			  }
+			  boolean isFriendlyEffect = (e.getOriginCharacter() > 2 && self.getPosition() > 2) || (e.getOriginCharacter() < 3 && self.getPosition() < 3) ;
+			  boolean isNotVisible = !e.isVisible();
+			  boolean isCounter = Quality.COUNTERED.equals(e.getQuality());
+			  if (isCounter && isNotVisible && !isFriendlyEffect) {
+				  if (targetPositions.contains(enemy.getPosition())) {
+					  enemyHasCounter = true;
+					  theirCounter = e;
+				  }
+				  anyEnemyHasCounter = true;
+				  theirCounter = e;
+			  }
+		  }
+	  }
+	  
+	  
+	  
 	  if(a.isAoe()) {
 		  if(a.isEnemy()) {
-//	    		if (enemyHasCounter or iHaveCounterFromEnemy && abilityHasDamagingEffect) {
-//	      			// remove and show the counter was used 
-			  		// ORR CHANGE THIS IFF TO JUST PASS A BOOLEAN TO METHOD BELOW FOR COUNTERED EFFECTS ??
-//	      		} else {
+			  
+	    		if (anyEnemyHasCounter) {
+	  				counterIsTriggered = true;
+	    			if (theirCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = theirCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGED.equals(flagName) || Conditional.ATTACKED.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFFED.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFFED.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} else if (iHaveCounterFromEnemy) {
+	  				counterIsTriggered = true;
+	    			if (myCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = myCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} 
+    			if (counterIsTriggered) {
+    				myCounter.triggerAndRevealCounter(a);
+    				// TODO: pass boolean to below so ability still gets set on CD?  or something
+    			} else {
 	              	a.getAoeEnemyEffects().forEach(e -> {
 	              		this.applyEffectToCharacters(new BattleEffect(e), enemies, self, enemyEnergy, energy, targetPositions, randomInt, true);
 	              	});
-//	      		}
+	      		}
 
           }
 		  if (a.isAlly()) {
-//			  if (iHaveCounterFromEnemy) {
-//				  
-//			  } else {
+	    		if (anyAllyHasCounter) {
+	  				counterIsTriggered = true;
+	    			if (ourCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = ourCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} else if (iHaveCounterFromEnemy) {
+	  				counterIsTriggered = true;
+	    			if (myCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = myCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} 
+    			if (counterIsTriggered) {
+    				myCounter.triggerAndRevealCounter(a);
+    			} else {
 		          	a.getAoeAllyEffects().forEach(e -> {
 		          		this.applyEffectToCharacters(new BattleEffect(e), allies, self, enemyEnergy, energy, targetPositions, randomInt, true);
 		          	});
-//			  }
+			    }
           }
-          if (a.isSelf() && !a.isAlly()) {
-        	a.getSelfEffects().forEach(e -> {
-          		this.applyEffectToCharacter(new BattleEffect(e), self, self, enemyEnergy, energy, randomInt, false, true);
-          	});
+          if (a.isSelf()) {
+        	  if (iHaveCounterFromEnemy) {
+	  				counterIsTriggered = true;
+	    			if (myCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = myCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} 
+  			if (counterIsTriggered) {
+  				myCounter.triggerAndRevealCounter(a);
+  			} else {
+	        	a.getSelfEffects().forEach(e -> {
+	          		this.applyEffectToCharacter(new BattleEffect(e), self, self, enemyEnergy, energy, randomInt, false, true);
+	          	});
+  			}
     	  }
       } else {
       	// SINGLE TARGET
 
 
           if(a.isEnemy()) {
-//	    		if (enemyHasCounter && abilityHasDamagingEffect) {
-//	      			// remove and show the counter was used
-//	      		} else {
+	    		if (anyEnemyHasCounter) {
+	  				counterIsTriggered = true;
+	    			if (theirCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = theirCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGED.equals(flagName) || Conditional.ATTACKED.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFFED.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFFED.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} else if (iHaveCounterFromEnemy) {
+	  				counterIsTriggered = true;
+	    			if (myCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = myCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} 
+    			if (counterIsTriggered) {
+    				myCounter.triggerAndRevealCounter(a);
+    			} else {
 		          	a.getEnemyEffects().forEach(e -> {
 		          		this.applyEffectToCharacters(new BattleEffect(e), enemies, self, enemyEnergy, energy, targetPositions, randomInt, true);
 		          	});
-//	      		}
+	      		}
           }
           if (a.isAlly()) {
-          	a.getAllyEffects().forEach(e -> {
-          		this.applyEffectToCharacters(new BattleEffect(e), allies, self, enemyEnergy, energy, targetPositions, randomInt, true);
-          	});
+	    		if (anyAllyHasCounter) {
+	  				counterIsTriggered = true;
+	    			if (ourCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = ourCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} else if (iHaveCounterFromEnemy) {
+	  				counterIsTriggered = true;
+	    			if (myCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = myCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} 
+    			if (counterIsTriggered) {
+    				myCounter.triggerAndRevealCounter(a);
+    			} else {
+		          	a.getAllyEffects().forEach(e -> {
+		          		this.applyEffectToCharacters(new BattleEffect(e), allies, self, enemyEnergy, energy, targetPositions, randomInt, true);
+		          	});
+      		}
+
           }
           if (a.isSelf()) {
-        	a.getSelfEffects().forEach(e -> {
-          		this.applyEffectToCharacter(new BattleEffect(e), self, self, enemyEnergy, energy, randomInt, false, true);
-          	});
+        	  if (iHaveCounterFromEnemy) {
+	  				counterIsTriggered = true;
+	    			if (myCounter.isConditional()) {
+		  				  counterIsTriggered = false;
+
+	  					  String flagName = myCounter.getCondition().split("_")[2];
+	  					  if (Conditional.DAMAGE.equals(flagName) || Conditional.ATTACK.equals(flagName)) {
+	  						  counterIsTriggered = a.isDamaging();
+	  					  } else if (Conditional.BUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isBuff();
+	  					  } else if (Conditional.DEBUFF.equals(flagName)) {
+	  						  counterIsTriggered = a.isDebuff();
+	  					  } else if (Conditional.PHYSICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isPhysical();
+	  					  } else if (Conditional.MAGICAL.equals(flagName)) {
+	  						  counterIsTriggered = a.isMagical();
+	  					  } else if (Conditional.AFFLICTION.equals(flagName)) {
+	  						  counterIsTriggered = a.isAffliction();
+	  					  }
+	    			}
+	      		} 
+  			if (counterIsTriggered) {
+  				myCounter.triggerAndRevealCounter(a);
+  			} else {
+	        	a.getSelfEffects().forEach(e -> {
+	          		this.applyEffectToCharacter(new BattleEffect(e), self, self, enemyEnergy, energy, randomInt, false, true);
+	          	});
+  			}
     	  }
-      }
-	  
+      } 
   };
   
   public void applyEffectToCharacters(BattleEffect effect, List<CharacterInstance> characters, CharacterInstance fromCharacter, 
@@ -437,13 +724,13 @@ public class NRG
 				  }
 			  }
 		  } else if ("WAS".equals(operator) || "DID".equals(operator)) {
-				  String flagName = conditions[2];
-				  for (String flag : thisChar.getFlags()) {
-					  if (flagName.equals(flag)) {
-						  passesConditional = true;
-						  break;
-					  }
+			  String flagName = conditions[2];
+			  for (String flag : thisChar.getFlags()) {
+				  if (flagName.equals(flag)) {
+					  passesConditional = true;
+					  break;
 				  }
+			  }
 		  }
 		  // TODO: basically just this for conditionals?? and maybe even fainne's hidden one
 		  // check character instance flags, which will be set below, when they occur.
@@ -770,10 +1057,6 @@ public class NRG
 			  fromCharacter.getFlags().add(Conditional.ATTACK);
 			  targetCharacter.getFlags().add(Conditional.ATTACKED);
 		  }
-		  if (dmgFlag) {
-			  fromCharacter.getFlags().add(Conditional.DAMAGE);
-			  targetCharacter.getFlags().add(Conditional.DAMAGED);
-		  }
 		  if (bufFlag) {
 			  fromCharacter.getFlags().add(Conditional.BUFF);
 			  targetCharacter.getFlags().add(Conditional.BUFFED);
@@ -781,6 +1064,12 @@ public class NRG
 		  if (debFlag) {
 			  fromCharacter.getFlags().add(Conditional.DEBUFF);
 			  targetCharacter.getFlags().add(Conditional.DEBUFFED);
+		  }
+		  // these two might have to come out of this IF...
+
+		  if (dmgFlag) {
+			  fromCharacter.getFlags().add(Conditional.DAMAGE);
+			  targetCharacter.getFlags().add(Conditional.DAMAGED);
 		  }
 		  if (kilFlag) {
 			  fromCharacter.getFlags().add(Conditional.KILL);

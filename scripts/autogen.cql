@@ -44,6 +44,8 @@ CREATE TYPE outsiders_arena.ability (
     abilityurl text,
     name text,
     description text,
+    targets text,
+    types text,
     aoe boolean,
     self boolean,
     ally boolean,

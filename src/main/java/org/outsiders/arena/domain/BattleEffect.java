@@ -64,6 +64,17 @@ public class BattleEffect extends Effect {
 			  this.statMods.put(entry.getKey(), entry.getValue());
 		  }
 	  }
+	  
+	  public void triggerAndRevealCounter(Ability abilityCountered) {
+		  this.setVisible(true);
+		  this.setDuration(995);
+		  this.setDescription(abilityCountered.getName() + " has been countered.");
+		  this.setQuality(null);
+		  this.setCondition(null);
+		  this.setConditional(false);
+		  this.setStatMods(null);
+		  this.setStacks(false);
+	  }
 	
 
 	public int getInstanceId() {

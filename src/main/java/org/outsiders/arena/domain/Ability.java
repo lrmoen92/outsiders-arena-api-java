@@ -1,7 +1,10 @@
 package org.outsiders.arena.domain;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
@@ -14,6 +17,8 @@ public class Ability
   private String name;
   private String abilityUrl;
   private String description;
+  private String targets;
+  private String types;
   private List<String> cost = Collections.singletonList("RANDOM");
   private List<Effect> selfEffects = Collections.emptyList();
   private List<Effect> enemyEffects = Collections.emptyList();
@@ -33,6 +38,247 @@ public class Ability
     this.ally = allies;
     this.self = self;
     this.aoe = aoe;
+  }
+  
+  public String getTargets() {
+	  return this.targets;
+  }
+
+  
+  public String getTypes() {
+	  return this.types;  
+  }
+
+  @JsonIgnore
+  public String getCleanCost() {
+	  StringBuilder sb = new StringBuilder();
+	  int div = 0;
+	  int arc = 0;
+	  int dex = 0;
+	  int str = 0;
+	  int ran = 0;
+	  for (String cost : this.cost) {
+		  if (cost.equals(Energy.DIVINITY)) {
+			  div++;
+		  } else if (cost.equals(Energy.ARCANA)) {
+			  arc++;
+		  } else if (cost.equals(Energy.DEXTERITY)) {
+			  dex++;
+		  } else if (cost.equals(Energy.STRENGTH)) {
+			  str++;
+		  } else if (cost.equals(Energy.RANDOM)) {
+			  ran++;
+		  }
+	  };
+	  
+	  if (div > 0) {
+		  sb.append(div);
+		  sb.append(" Divinity");
+	  }
+	  if (arc > 0) {
+		  sb.append(arc);
+		  sb.append(" Arcana");
+	  }
+	  if (dex > 0) {
+		  sb.append(dex);
+		  sb.append(" Dexterity");
+	  }
+	  if (str > 0) {
+		  sb.append(str);
+		  sb.append(" Strength");
+	  }
+	  if (ran > 0) {
+		  sb.append(ran);
+		  sb.append(" Random");
+	  }
+	  return sb.toString();
+  }
+  
+  
+  @JsonIgnore
+  public String getShorthand() {
+	  return "CD: " + this.cooldown + " - " + this.name + " - " + this.getCleanCost() + ": " + this.description;
+  }
+  
+  @JsonIgnore
+  public void setTargets() {
+	  List<String> list = new ArrayList<>();
+	  if (this.isSelf()) {
+		  list.add("Self");
+	  }
+
+	  if (this.isAoe()) {
+		  if (this.isAlly()) {
+			  list.add("Allies");
+		  }
+		  if (this.isEnemy()) {
+			  list.add("Enemies");
+		  }
+	  } else {
+		  if (this.isAlly()) {
+			  list.add("Ally");
+		  } else if (this.isEnemy()) {
+			  list.add("Enemy");
+		  }
+	  }
+	  StringBuilder sb = new StringBuilder();
+	  
+	  for(int i = 0; i< list.size() ; i++) {
+		  String s = list.get(i);
+		  sb.append(s);
+		  if (i != list.size() -1) {
+			  sb.append(" and ");
+		  }
+	  }
+
+	  this.targets = sb.toString();
+  }
+  
+  @JsonIgnore
+  public void setTypes() {
+	  List<String> list = new ArrayList<>();
+	  if (this.isPhysical()) {
+		  list.add("Physical");
+	  }
+	  if (this.isMagical()) {
+		  list.add("Magical");
+	  }
+	  if (this.isAffliction()) {
+		  list.add("Affliction");
+	  }
+	  if (this.isDamaging()) {
+		  list.add("Damaging");
+	  }
+	  if (this.isDebuff()) {
+		  list.add("Debuff");
+	  }
+	  if (this.isBuff()) {
+		  list.add("Buff");
+	  }
+	  if (this.isInterruptable()) {
+		  list.add("Interruptable");
+	  }
+	  if (!this.isVisible()) {
+		  list.add("Hidden");
+	  }
+	  if (this.isStacks()) {
+		  list.add("Stacks");
+	  }
+	  // TODO LATER: Interruptable, Conditional, Visible, Stacks
+
+	  StringBuilder sb = new StringBuilder();
+	  
+	  for(int i = 0; i< list.size() ; i++) {
+		  String s = list.get(i);
+		  sb.append(s);
+		  if (i != list.size() -1) {
+			  sb.append(", ");
+		  }
+	  }
+
+	  this.types = sb.toString();
+  }
+  
+  @JsonIgnore
+  public Map<String, String> getRundown() {
+	  Map<String, String> map = new HashMap<>();
+	  
+	  map.put("TARGETS", this.getTargets());
+	  map.put("TYPES", this.getTypes());
+	  
+	  return map;
+  }
+  
+  @JsonIgnore
+  public boolean isInterruptable() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.isInterruptable()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.isInterruptable()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.isInterruptable()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.isInterruptable()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.isInterruptable()) {
+			  return true;
+		  }
+	  }
+	  return false;
+  }
+  
+  
+  @JsonIgnore
+  public boolean isVisible() {
+	  for (Effect e: this.selfEffects) {
+		  if (!e.isVisible()) {
+			  return false;
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (!e.isVisible()) {
+			  return false;
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (!e.isVisible()) {
+			  return false;
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (!e.isVisible()) {
+			  return false;
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (!e.isVisible()) {
+			  return false;
+		  }
+	  }
+	  return true;
+  }
+  
+  
+  @JsonIgnore
+  public boolean isStacks() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.isStacks()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.isStacks()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.isStacks()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.isStacks()) {
+			  return true;
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.isStacks()) {
+			  return true;
+		  }
+	  }
+	  return false;
   }
   
   @JsonIgnore
@@ -125,6 +371,196 @@ public class Ability
 	  return false;
   }
   
+  @JsonIgnore
+  public boolean isDamaging() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.getStatMods().get(Stat.DAMAGE) != null) {
+			  if (e.getStatMods().get(Stat.DAMAGE) > 0) {
+				  return true;  
+			  }
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.getStatMods().get(Stat.DAMAGE) != null) {
+			  if (e.getStatMods().get(Stat.DAMAGE) > 0) {
+				  return true;  
+			  }
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.getStatMods().get(Stat.DAMAGE) != null) {
+			  if (e.getStatMods().get(Stat.DAMAGE) > 0) {
+				  return true;  
+			  }
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.getStatMods().get(Stat.DAMAGE) != null) {
+			  if (e.getStatMods().get(Stat.DAMAGE) > 0) {
+				  return true;  
+			  }
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.getStatMods().get(Stat.DAMAGE) != null) {
+			  if (e.getStatMods().get(Stat.DAMAGE) > 0) {
+				  return true;  
+			  }
+		  }
+	  }
+	  return false;
+  }
+  
+  
+  @JsonIgnore
+  public boolean isBuff() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.getStatMods() != null) {
+			  for (String buff : Stat.BUFFS) {
+				  if (e.getStatMods().get(buff) != null) {
+					  if (e.getStatMods().get(buff) > 0) {
+						  return true;
+					  }
+				  }
+			  }
+			  for (String buff : Stat.DEBUFFS) {
+				  if (e.getStatMods().get(buff) != null) {
+					  if (e.getStatMods().get(buff) < 0) {
+						  return true;
+					  }
+				  }
+			  }  
+		  }
+		  for (String buff : Quality.BUFFS) {
+			  if (buff.equals(e.getQuality())) {
+				  return true;
+			  }
+		  }
+	  }
+	  for (Effect e: this.allyEffects) {
+		  if (e.getStatMods() != null) {
+			  for (String buff : Stat.BUFFS) {
+				  if (e.getStatMods().get(buff) != null) {
+					  if (e.getStatMods().get(buff) > 0) {
+						  return true;  
+					  }
+				  }
+			  }
+			  for (String buff : Stat.DEBUFFS) {
+				  if (e.getStatMods().get(buff) != null) {
+					  if (e.getStatMods().get(buff) < 0) {
+						  return true;  
+					  }
+				  }
+			  }
+		  }
+		  for (String buff : Quality.BUFFS) {
+			  if (buff.equals(e.getQuality())) {
+				  return true;
+			  }
+		  }
+	  }
+	  for (Effect e: this.aoeAllyEffects) {
+		  if (e.getStatMods() != null) {
+			  for (String buff : Stat.BUFFS) {
+				  if (e.getStatMods().get(buff) != null) {
+					  if (e.getStatMods().get(buff) > 0) {
+						  return true;  
+					  }
+				  }
+			  }
+			  for (String buff : Stat.DEBUFFS) {
+				  if (e.getStatMods().get(buff) != null) {
+					  if (e.getStatMods().get(buff) < 0) {
+						  return true;  
+					  }
+				  }
+			  }
+		  }
+		  for (String buff : Quality.BUFFS) {
+			  if (buff.equals(e.getQuality())) {
+				  return true;
+			  }
+		  }
+	  }
+	  return false;
+  }
+  
+  
+  @JsonIgnore
+  public boolean isDebuff() {
+	  for (Effect e: this.selfEffects) {
+		  if (e.getStatMods() != null) {
+			  for (String debuff : Stat.BUFFS) {
+				  if (e.getStatMods().get(debuff) != null) {
+					  if (e.getStatMods().get(debuff) < 0) {
+						  return true;  
+					  }
+				  }
+			  }
+			  for (String debuff : Stat.DEBUFFS) {
+				  if (e.getStatMods().get(debuff) != null) {
+					  if (e.getStatMods().get(debuff) > 0) {
+						  return true;  
+					  }
+				  }
+			  }  
+		  }
+		  for (String debuff : Quality.DEBUFFS) {
+			  if (debuff.equals(e.getQuality())) {
+				  return true;
+			  }
+		  }
+	  }
+	  for (Effect e: this.enemyEffects) {
+		  if (e.getStatMods() != null) {
+			  for (String debuff : Stat.BUFFS) {
+				  if (e.getStatMods().get(debuff) != null) {
+					  if (e.getStatMods().get(debuff) < 0) {
+						  return true;  
+					  }
+				  }
+			  }
+			  for (String debuff : Stat.DEBUFFS) {
+				  if (e.getStatMods().get(debuff) != null) {
+					  if (e.getStatMods().get(debuff) > 0) {
+						  return true;  
+					  }
+				  }
+			  }  
+		  }
+		  for (String debuff : Quality.DEBUFFS) {
+			  if (debuff.equals(e.getQuality())) {
+				  return true;
+			  }
+		  }
+	  }
+	  for (Effect e: this.aoeEnemyEffects) {
+		  if (e.getStatMods() != null) {
+			  for (String debuff : Stat.BUFFS) {
+				  if (e.getStatMods().get(debuff) != null) {
+					  if (e.getStatMods().get(debuff) < 0) {
+						  return true;  
+					  }
+				  }
+			  }
+			  for (String debuff : Stat.DEBUFFS) {
+				  if (e.getStatMods().get(debuff) != null) {
+					  if (e.getStatMods().get(debuff) > 0) {
+						  return true;  
+					  }
+				  }
+			  }  
+		  }
+		  for (String debuff : Quality.DEBUFFS) {
+			  if (debuff.equals(e.getQuality())) {
+				  return true;
+			  }
+		  }
+	  }
+	  return false;
+  }
+  
   public String getName()
   {
     return this.name;
@@ -134,8 +570,6 @@ public class Ability
   {
     this.name = name;
   }
-  
-  
   
   public int getCooldown()
   {

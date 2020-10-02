@@ -1,4 +1,3 @@
-
 Alex
 
 CD: 4 - Impulse - 1 Random Do 10 points of affliction damage for 3 turns to one enemy
@@ -37,31 +36,31 @@ CD: 4 - Suggestion 1 Random - Go invulnerable for one turn
 
 Tristane 
 
-CD: 1 - Backstab - dmg
-CD: 4 - Guildmaster - self buff?
+CD: 1 - Backstab - random dmg for high cost
+CD: 4 - Guildmaster - dmg reduction or cost reduction
 CD: 4 - Scheme - hidden skill
 CD: 4 - 1 Random - Go invulnerable for one turn
 
 Drundar 
 
 CD: 1 - Hammer Down - Piercing damage
-CD: 4 - Build Up - put shields on self
+CD: 4 - Build Up - put shields or armor on self
 CD: 4 - Quake - aoe dmg, and shield destruction
-CD: 4 - 1 Random - Go invulnerable for one turn
+CD: 4 - Call The Guard - Go invulnerable for one turn
 
 Kalio 
 
-CD: 1 - Mage Armor - Give ally or self  armor and reflect damage
+CD: 1 - Mage Armor - Give ally or self armor and reflect damage
 CD: 4 - Dispel - remove magical effects
 CD: 4 - Research - reroll energy hanatarou style
-CD: 4 - 1 Random - Go invulnerable for one turn
+CD: 4 - A+ - Go invulnerable for one turn
 
 Ralion 
 
 CD: 1 - Extort - increase enemy costs
 CD: 4 - Lightning Bolt - hard dmg
-CD: 4 - Show of Force - dmg, lower enemy damage, or stun skills
-CD: 4 - 1 Random - Go invulnerable for one turn
+CD: 4 - Arrogant Generosity - heal enemy for 10 hp, lower enemy damage, or/and stun skills
+CD: 4 - Ultimatum - Go invulnerable for one turn
 
 Imperia 
 

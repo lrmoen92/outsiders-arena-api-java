@@ -442,6 +442,19 @@ public class BattleMessageService {
         String responseJson = "{\"type\": \"TCHECK\", \"playerId\": " + playerId + ", \"dto\": " + new Gson().toJson(dto) + "}";
         return responseJson;
     }
+    
+    public String handleSurrenderMessage(Map valueMap) throws Exception {
+
+        LOG.info("Surrender");
+        Integer playerId = getMapEntryAsInt("playerId", valueMap);
+        
+        // TODO: actually clean up the battle
+        
+        String responseJson = "{\"type\": \"SURRENDER\", \"playerId\": " + playerId + "}";
+        LOG.info(responseJson.toString());
+        return responseJson;
+    }
+    
 
     public String handleCostCheckMessage(Map valueMap) throws Exception {
         // respond with an array of the abilities that CAN be cast
@@ -681,19 +694,19 @@ public class BattleMessageService {
 
     	for (CharacterInstance ch : units) {
     		if (ch.getCooldownOne() > 0) {
-    			input[counter] = -1;
+    			input[counter] = -1 - ch.getCooldownOne();
     		}
         	counter++;
     		if (ch.getCooldownTwo() > 0) {
-    			input[counter] = -1;
+    			input[counter] = -1 - ch.getCooldownTwo();
     		}
         	counter++;
     		if (ch.getCooldownThree() > 0) {
-    			input[counter] = -1;
+    			input[counter] = -1 - ch.getCooldownThree();
     		}
         	counter++;
     		if (ch.getCooldownFour() > 0) {
-    			input[counter] = -1;
+    			input[counter] = -1 - ch.getCooldownFour();
     		}
         	counter++;
     	}

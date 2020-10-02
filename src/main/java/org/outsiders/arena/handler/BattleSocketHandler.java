@@ -44,7 +44,7 @@ extends SocketHandler {
     	
         for (WebSocketSession s : sessions) {
         	if (session.getUri().equals(s.getUri()) && !session.equals(s)) {
-        		if (m.get("type").toString().equals("MATCH_MAKING") || m.get("type").toString().equals("TURN_END") || m.get("type").toString().equals("CHAT")) {
+        		if (m.get("type").toString().equals("MATCH_MAKING") || m.get("type").toString().equals("TURN_END") || m.get("type").toString().equals("CHAT") || m.get("type").toString().equals("SURRENDER")) {
         			LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " MATCHED AND SENT TO " + s.getRemoteAddress().toString() + " ON ARENA : " + s.getUri().toString());
     		    	session.sendMessage(msg);
             		s.sendMessage(msg);
@@ -77,6 +77,9 @@ extends SocketHandler {
     	  	case "ENERGY_TRADE": 
 		      LOG.info("Energy Trade");
 		      return this.battleMessageService.handleEnergyTradeMessage(valueMap);
+    	  	case "SURRENDER": 
+		      LOG.info("Surrender");
+		      return this.battleMessageService.handleSurrenderMessage(valueMap);
 		    default :
 		      LOG.info("Unrecognized Message");
 		      return "";

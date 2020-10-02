@@ -19,10 +19,16 @@ public class Character
   private Ability slot2;
   private Ability slot3;
   private Ability slot4;
-  private Ability slota;
-  private Ability slotb;
-  private Ability slotc;
-  private Ability slotd;
+  
+  // THIS IS FOR FUTURE STATE, WE GOTTA GET RID OF THIS 1234 SHIT
+//  private List<Ability> abilities;
+  
+  
+  public String toString()
+  {
+	  
+	  return "Name: " + this.name + ", Id: " + this.id;
+  }
   
   public int getId()
   {
@@ -93,51 +99,7 @@ public class Character
   {
     this.slot4 = slot4;
   }
-  
-  public Ability getSlota()
-  {
-    return this.slota;
-  }
-  
-  public void setSlota(Ability slota)
-  {
-    this.slota = slota;
-  }
-  
-  public Ability getSlotb()
-  {
-    return this.slotb;
-  }
-  
-  public void setSlotb(Ability slotb)
-  {
-    this.slotb = slotb;
-  }
-  
-  public Ability getSlotc()
-  {
-    return this.slotc;
-  }
-  
-  public void setSlotc(Ability slotc)
-  {
-    this.slotc = slotc;
-  }
-  
-  public Ability getSlotd()
-  {
-    return this.slotd;
-  }
-  
-  public void setSlotd(Ability slotd)
-  {
-    this.slotd = slotd;
-  }
-  
-  public String toString()
-  {
-	  return "Name: " + this.name + ", Id: " + this.id;
-  }
+
 
 public String getDescription() {
 	return description;

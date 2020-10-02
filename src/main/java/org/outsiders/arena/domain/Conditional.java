@@ -5,6 +5,15 @@ public class Conditional {
 	// these seem like they're for buff abilities
 	
 	//target an enemy with a damaging effect
+	public static final String PHYSICAL = "PHYSICAL";	
+	//target an enemy with a damaging effect
+	public static final String MAGICAL = "MAGICAL";	
+	//target an enemy with a damaging effect
+	public static final String AFFLICTION = "AFFLICTION";
+
+	// these seem like they're for buff abilities
+	
+	//target an enemy with a damaging effect
 	public static final String ATTACK = "ATTACK";
 	//damage an enemy with a damaging effect
 	public static final String DAMAGE = "DAMAGE";

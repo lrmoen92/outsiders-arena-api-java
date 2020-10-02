@@ -1,5 +1,8 @@
 package org.outsiders.arena.domain;
 
+import java.util.Arrays;
+import java.util.List;
+
 //basically all the buffs and debuffs
 public class Stat
 {
@@ -63,4 +66,13 @@ public class Stat
   public static final String ARMOR = "ARMOR";
   public static final String PHYSICAL_ARMOR = "PHYSICAL_ARMOR";
   public static final String MAGICAL_ARMOR = "MAGICAL_ARMOR";
+  
+
+  // increasing these is good, decreasing them is bad
+  public static final List<String> BUFFS = Arrays.asList(Stat.ARMOR, Stat.PHYSICAL_ARMOR, Stat.MAGICAL_ARMOR, Stat.SHIELD_GAIN, Stat.SHIELDS, Stat.ENERGY_CHANGE, Stat.STRENGTH_CHANGE, Stat.DEXTERITY_CHANGE, Stat.ARCANA_CHANGE, Stat.DIVINITY_CHANGE,
+		  Stat.DAMAGE_OUT, Stat.PHYSICAL_DAMAGE_OUT, Stat.MAGICAL_DAMAGE_OUT, Stat.AFFLICTION_DAMAGE_OUT);
+  
+  // increasing these is bad, decreasing them is good
+  public static final List<String> DEBUFFS = Arrays.asList(Stat.COOLDOWN_ALL, Stat.COOLDOWN_1, Stat.COOLDOWN_2, Stat.COOLDOWN_3, Stat.COOLDOWN_4, Stat.COST_CHANGE, Stat.DAMAGE_IN, Stat.PHYSICAL_DAMAGE_IN, Stat.MAGICAL_DAMAGE_IN, Stat.AFFLICTION_DAMAGE_IN);
+  
 }
