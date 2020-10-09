@@ -15,13 +15,7 @@ public class Character
   private String name;
   private String description;
   private List<String> factions;
-  private Ability slot1;
-  private Ability slot2;
-  private Ability slot3;
-  private Ability slot4;
-  
-  // THIS IS FOR FUTURE STATE, WE GOTTA GET RID OF THIS 1234 SHIT
-//  private List<Ability> abilities;
+  private List<Ability> abilities;
   
   
   public String toString()
@@ -59,46 +53,6 @@ public class Character
   {
     this.avatarUrl = avatarUrl;
   }
-  
-  public Ability getSlot1()
-  {
-    return this.slot1;
-  }
-  
-  public void setSlot1(Ability slot1)
-  {
-    this.slot1 = slot1;
-  }
-  
-  public Ability getSlot2()
-  {
-    return this.slot2;
-  }
-  
-  public void setSlot2(Ability slot2)
-  {
-    this.slot2 = slot2;
-  }
-  
-  public Ability getSlot3()
-  {
-    return this.slot3;
-  }
-  
-  public void setSlot3(Ability slot3)
-  {
-    this.slot3 = slot3;
-  }
-  
-  public Ability getSlot4()
-  {
-    return this.slot4;
-  }
-  
-  public void setSlot4(Ability slot4)
-  {
-    this.slot4 = slot4;
-  }
 
 
 public String getDescription() {
@@ -115,5 +69,13 @@ public List<String> getFactions() {
 
 public void setFactions(List<String> factions) {
 	this.factions = factions;
+}
+
+public List<Ability> getAbilities() {
+	return abilities;
+}
+
+public void setAbilities(List<Ability> abilities) {
+	this.abilities = abilities;
 }
 }

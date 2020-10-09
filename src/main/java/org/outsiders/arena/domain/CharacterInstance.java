@@ -1,9 +1,8 @@
 package org.outsiders.arena.domain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
@@ -11,10 +10,7 @@ import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 public class CharacterInstance
 {
   private int hp = 100;
-  private int cooldownOne = 0;
-  private int cooldownTwo = 0;
-  private int cooldownThree = 0;
-  private int cooldownFour = 0;
+  private List<Integer> cooldowns = Arrays.asList(0, 0, 0, 0);
   // player 1 (0, 1, 2) player 2 (3, 4, 5)
   private int position;
   private int characterId;
@@ -75,38 +71,6 @@ public class CharacterInstance
 		this.position = position;
 	}
 
-	public int getCooldownOne() {
-		return cooldownOne;
-	}
-
-	public void setCooldownOne(int cooldownOne) {
-		this.cooldownOne = cooldownOne;
-	}
-
-	public int getCooldownTwo() {
-		return cooldownTwo;
-	}
-
-	public void setCooldownTwo(int cooldownTwo) {
-		this.cooldownTwo = cooldownTwo;
-	}
-
-	public int getCooldownThree() {
-		return cooldownThree;
-	}
-
-	public void setCooldownThree(int cooldownThree) {
-		this.cooldownThree = cooldownThree;
-	}
-
-	public int getCooldownFour() {
-		return cooldownFour;
-	}
-
-	public void setCooldownFour(int cooldownFour) {
-		this.cooldownFour = cooldownFour;
-	}
-
 	public List<BattleEffect> getEffects() {
 		return effects;
 	}
@@ -121,6 +85,14 @@ public class CharacterInstance
 
 	public void setFlags(List<String> flags) {
 		this.flags = flags;
+	}
+
+	public List<Integer> getCooldowns() {
+		return cooldowns;
+	}
+
+	public void setCooldowns(List<Integer> cooldowns) {
+		this.cooldowns = cooldowns;
 	}
 
 }

@@ -27,10 +27,7 @@ CREATE TYPE outsiders_arena.battleeffect (
 CREATE TYPE outsiders_arena.characterinstance (
     hp int,
     position int,
-    cooldownOne int,
-    cooldownTwo int,
-    cooldownThree int,
-    cooldownFour int,
+    cooldowns list<int>,
     playeronecharacter boolean,
     location int,
     characterid int,
@@ -44,6 +41,7 @@ CREATE TYPE outsiders_arena.ability (
     abilityurl text,
     name text,
     description text,
+    position int,
     targets text,
     types text,
     aoe boolean,
@@ -64,14 +62,7 @@ CREATE TABLE outsiders_arena.character (
     name text,
     description text,
     factions list<text>,
-    slot1 frozen<ability>,
-    slot2 frozen<ability>,
-    slot3 frozen<ability>,
-    slot4 frozen<ability>,
-    slota frozen<ability>,
-    slotb frozen<ability>,
-    slotc frozen<ability>,
-    slotd frozen<ability>
+    abilities list<frozen<ability>>
 );
 
 CREATE TABLE outsiders_arena.battle (

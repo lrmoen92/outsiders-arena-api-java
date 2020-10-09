@@ -193,40 +193,20 @@ public class BattleMessageService {
         // countdown cooldowns by one
         if (isPlayerOne) {
 	        for (CharacterInstance c: b.getPlayerOneTeam()) {
-	        	int one = c.getCooldownOne();
-	        	int two = c.getCooldownTwo();
-	        	int three = c.getCooldownThree();
-	        	int four = c.getCooldownFour();
-	        	if (one > 0) {
-	            	c.setCooldownOne(one - 1);
-	        	}
-	        	if (two > 0) {
-	            	c.setCooldownTwo(two - 1);
-	        	}
-	        	if (three > 0) {
-	            	c.setCooldownThree(three - 1);
-	        	}
-	        	if (four > 0) {
-	            	c.setCooldownFour(four - 1);
+	        	for (int i = 0; i < c.getCooldowns().size(); i++) {
+	        		int cd = c.getCooldowns().get(i);
+	        		if (cd > 0) {
+	        			c.getCooldowns().set(i, (cd -1));
+	        		}
 	        	}
 	        }
         } else {
 	        for (CharacterInstance c: b.getPlayerTwoTeam()) {
-	        	int one = c.getCooldownOne();
-	        	int two = c.getCooldownTwo();
-	        	int three = c.getCooldownThree();
-	        	int four = c.getCooldownFour();
-	        	if (one > 0) {
-	            	c.setCooldownOne(one - 1);
-	        	}
-	        	if (two > 0) {
-	            	c.setCooldownTwo(two - 1);
-	        	}
-	        	if (three > 0) {
-	            	c.setCooldownThree(three - 1);
-	        	}
-	        	if (four > 0) {
-	            	c.setCooldownFour(four - 1);
+	        	for (int i = 0; i < c.getCooldowns().size(); i++) {
+	        		int cd = c.getCooldowns().get(i);
+	        		if (cd > 0) {
+	        			c.getCooldowns().set(i, (cd -1));
+	        		}
 	        	}
 	        }
         }
@@ -271,30 +251,12 @@ public class BattleMessageService {
         List<CharacterInstance> team = isPlayerOne? bPost.getPlayerOneTeam() : bPost.getPlayerTwoTeam();
 	  	  // set abilities Cooldowns after all is said and done
 	  	  for (AbilityTargetDTO atDTO : dto.getAbilities()) {
-	  		  int cd = atDTO.getAbility().getCooldown();
-	  		  int index2 = atDTO.getAbilityPosition();
-	  		  int index;
-	  		  if (index2 > 7) {
-	  			  index = 2;
-	  		  } else if (index2 > 3) {
-	  			  index = 1;
-	  		  } else {
-	  			  index = 0;
-	  		  }
-	  		  index2++;
-	  		  CharacterInstance cha = team.get(index);
-	  		  if (index2 % 4 == 0) {
-	  			  cha.setCooldownFour(cd);
-	  		  } else if (index2 % 4 == 1) {
-	  			  cha.setCooldownOne(cd);
-	  		  } else if (index2 % 4 == 2) {
-	  			  cha.setCooldownTwo(cd);
-	  		  } else if (index2 % 4 == 3) {
-	  			  cha.setCooldownThree(cd);
-	  		  } else {
-	  			  throw new Exception();
-	  		  }
-	  		  team.set(index, cha);
+	  		  Ability a = atDTO.getAbility();
+	  		  int abPos = a.getPosition();
+	  		  int cd = a.getCooldown();
+	  		  int charPos = atDTO.getCharacterPosition();
+	  		  int teamPos = charPos > 2 ? charPos - 3 : charPos;
+	  		  team.get(teamPos).getCooldowns().set(abPos, cd);
 	  	  }
         
         // just gotta write an exception here for damaging effects.  if duration is 0, and effect is dmg, then dont add it.
@@ -617,37 +579,21 @@ public class BattleMessageService {
     			input[3 + (4 * i)] = -1;
     		} else {
 	    		if (physStunned) {
-	        		if (character.getSlot1().isPhysical()) {
-	        			input[0 + (4 * i)] = -1;
-	        		}
-	        		if (character.getSlot2().isPhysical()) {
-	        			input[1 + (4 * i)] = -1;
-	        		}
-	        		if (character.getSlot3().isPhysical()) {
-	        			input[2 + (4 * i)] = -1;
-	        		}
-	        		if (character.getSlot4().isPhysical()) {
-	        			input[3 + (4 * i)] = -1;
-	        		}
+	    			for (Ability a : character.getAbilities()) {
+		        		if (a.isPhysical()) {
+		        			input[a.getPosition() + (4 * i)] = -1;
+		        		}
+	    			}
 	    		}
 	    		if (magStunned) {
-	        		if (character.getSlot1().isMagical()) {
-	        			input[0 + (4 * i)] = -1;
-	        		}
-	        		if (character.getSlot2().isMagical()) {
-	        			input[1 + (4 * i)] = -1;
-	        		}
-	        		if (character.getSlot3().isMagical()) {
-	        			input[2 + (4 * i)] = -1;
-	        		}
-	        		if (character.getSlot4().isMagical()) {
-	        			input[3 + (4 * i)] = -1;
-	        		}
+	    			for (Ability a : character.getAbilities()) {
+		        		if (a.isMagical()) {
+		        			input[a.getPosition() + (4 * i)] = -1;
+		        		}
+	    			}
 	    		}
     		}
 
-
-    	
     	}
     	return input;
     }
@@ -693,22 +639,11 @@ public class BattleMessageService {
         int counter = 0;
 
     	for (CharacterInstance ch : units) {
-    		if (ch.getCooldownOne() > 0) {
-    			input[counter] = -1 - ch.getCooldownOne();
+    		for (int cd : ch.getCooldowns()) {
+    			// this is specific to return CD length in a cryptic way i guess lol
+    			input[counter] = -1 - cd;
+            	counter++;
     		}
-        	counter++;
-    		if (ch.getCooldownTwo() > 0) {
-    			input[counter] = -1 - ch.getCooldownTwo();
-    		}
-        	counter++;
-    		if (ch.getCooldownThree() > 0) {
-    			input[counter] = -1 - ch.getCooldownThree();
-    		}
-        	counter++;
-    		if (ch.getCooldownFour() > 0) {
-    			input[counter] = -1 - ch.getCooldownFour();
-    		}
-        	counter++;
     	}
     	return input;
     }

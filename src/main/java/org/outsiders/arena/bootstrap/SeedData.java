@@ -121,6 +121,7 @@ public class SeedData
 	  if (l == null) {
 		  l = new ArrayList<>();
 	  }
+	  a.setPosition(l.size());
 	  l.add(a);
 	  return l;
   }
@@ -208,10 +209,7 @@ public class SeedData
 	  c.setId(1);
 	  c.setName("Alex Drake");
 	  c.setAvatarUrl("/assets/alex.png");
-	  c.setSlot1(test.get(0));
-	  c.setSlot2(test.get(1));
-	  c.setSlot3(test.get(2));
-	  c.setSlot4(test.get(3));
+	  c.setAbilities(test);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -295,10 +293,7 @@ public class SeedData
 	  c.setId(2);
 	  c.setName("Fainne");
 	  c.setAvatarUrl("/assets/fainne.png");
-	  c.setSlot1(test.get(0));
-	  c.setSlot2(test.get(1));
-	  c.setSlot3(test.get(2));
-	  c.setSlot4(test.get(3));
+	  c.setAbilities(test);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -375,10 +370,7 @@ public class SeedData
 	  c.setId(3);
 	  c.setName("Shinzo Katetsu");
 	  c.setAvatarUrl("/assets/shinzo.png");
-	  c.setSlot1(test.get(0));
-	  c.setSlot2(test.get(1));
-	  c.setSlot3(test.get(2));
-	  c.setSlot4(test.get(3));
+	  c.setAbilities(test);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -475,10 +467,7 @@ public class SeedData
 	  c.setId(4);
 	  c.setName("Hollyanna Knox");
 	  c.setAvatarUrl("/assets/holly.png");
-	  c.setSlot1(test.get(0));
-	  c.setSlot2(test.get(1));
-	  c.setSlot3(test.get(2));
-	  c.setSlot4(test.get(3));
+	  c.setAbilities(test);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -550,10 +539,7 @@ public class SeedData
 	  c.setId(5);
 	  c.setName("Geddy Splintwalker");
 	  c.setAvatarUrl("/assets/geddy.png");
-	  c.setSlot1(test.get(0));
-	  c.setSlot2(test.get(1));
-	  c.setSlot3(test.get(2));
-	  c.setSlot4(test.get(3));
+	  c.setAbilities(test);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -622,10 +608,7 @@ public class SeedData
 	  c.setId(6);
 	  c.setName("Guildmaster Tristane");
 	  c.setAvatarUrl("/assets/tristane.png");
-	  c.setSlot1(test.get(0));
-	  c.setSlot2(test.get(1));
-	  c.setSlot3(test.get(2));
-	  c.setSlot4(test.get(3));
+	  c.setAbilities(test);
 	  
 	  c = this.characterService.save(c);
 	  return c;

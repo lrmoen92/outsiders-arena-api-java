@@ -17,6 +17,7 @@ public class Ability
   private String name;
   private String abilityUrl;
   private String description;
+  private int position;
   private String targets;
   private String types;
   private List<String> cost = Collections.singletonList("RANDOM");
@@ -691,5 +692,21 @@ public String getDescription() {
 
 public void setDescription(String description) {
 	this.description = description;
+}
+
+public int getPosition() {
+	return position;
+}
+
+public void setPosition(int position) {
+	this.position = position;
+}
+
+public void setTargets(String targets) {
+	this.targets = targets;
+}
+
+public void setTypes(String types) {
+	this.types = types;
 }
 }

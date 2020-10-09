@@ -8,7 +8,6 @@ public class AbilityTargetDTO {
 	Ability ability;
 	Integer characterPosition;
 	List<Integer> targetPositions;
-	Integer abilityPosition;
 	
 	public Ability getAbility() {
 		return ability;
@@ -27,12 +26,6 @@ public class AbilityTargetDTO {
 	}
 	public void setTargetPositions(List<Integer> targetPositions) {
 		this.targetPositions = targetPositions;
-	}
-	public Integer getAbilityPosition() {
-		return abilityPosition;
-	}
-	public void setAbilityPosition(Integer abilityPosition) {
-		this.abilityPosition = abilityPosition;
 	}
 
 }
