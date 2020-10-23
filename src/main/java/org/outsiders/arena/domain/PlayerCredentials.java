@@ -2,6 +2,9 @@ package org.outsiders.arena.domain;
 
 import java.io.Serializable;
 
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+
+@UserDefinedType
 public class PlayerCredentials implements Serializable {
 
 	/**
@@ -9,20 +12,20 @@ public class PlayerCredentials implements Serializable {
 	 */
 	private static final long serialVersionUID = 8895585864692900053L;
 	
-	private static String email;
-	private static String password;
+	private String email;
+	private String password;
 	
-	public static String getEmail() {
+	public String getEmail() {
 		return email;
 	}
-	public static void setEmail(String email) {
-		PlayerCredentials.email = email;
+	public void setEmail(String email) {
+		this.email = email;
 	}
-	public static String getPassword() {
+	public String getPassword() {
 		return password;
 	}
-	public static void setPassword(String password) {
-		PlayerCredentials.password = password;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }

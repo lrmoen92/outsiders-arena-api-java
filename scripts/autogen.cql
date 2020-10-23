@@ -24,6 +24,17 @@ CREATE TYPE outsiders_arena.battleeffect (
     quality text
 );
 
+CREATE TYPE outsiders_arena.missionrequirement (
+    amount int,
+    missionid int,
+    userfaction text,
+    targetfaction text
+);
+
+CREATE TYPE outsiders_arena.missionprogress (
+    progress list<frozen<missionrequirement>>
+);
+
 CREATE TYPE outsiders_arena.characterinstance (
     hp int,
     position int,
@@ -56,6 +67,11 @@ CREATE TYPE outsiders_arena.ability (
     aoeallyeffects list<frozen<battleeffect>>
 );
 
+CREATE TYPE outsiders_arena.playercredentials (
+    email text,
+    password text
+);
+
 CREATE TABLE outsiders_arena.character (
     id int PRIMARY KEY,
     avatarurl text,
@@ -79,14 +95,27 @@ CREATE TABLE outsiders_arena.battle (
     playertwoenergy map<text, int>
 );
 
+CREATE TABLE outsiders_arena.mission (
+    id int PRIMARY KEY,
+    name text,
+    description text,
+    avatarurl text,
+    minmumlevel int,
+    prerequisitemissionid int,
+    characteridunlocked int,
+    requirements list<frozen<missionrequirement>>
+);
+
 CREATE TABLE outsiders_arena.player (
     id int PRIMARY KEY,
     displayname text,
     avatarurl text,
+    credentials frozen<playercredentials>,
     level int,
     xp int,
     characteridsunlocked list<int>,
-    missionidscompleted list<int>
+    missionidscompleted list<int>,
+    missionprogress list<frozen<missionprogress>>
 );
 
 CREATE INDEX battle_playeridone on outsiders_arena.battle (playeridone);

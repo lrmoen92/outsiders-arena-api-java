@@ -13,14 +13,15 @@ public class Player
   private int id;
   private String avatarUrl;
   private String displayName;
-//  private PlayerCredentials credentials;
+  private PlayerCredentials credentials;
   // rank
   private int level;
   // raw xp (lp)
   private int xp;
   private List<Integer> missionIdsCompleted;
   private List<Integer> characterIdsUnlocked;
-//  private Map<Integer, MissionProgress> missionStatus;
+  // mission id, current amount (as opposed to total amount needed)
+  private List<MissionProgress> missionProgress;
   
   public int getId()
   {
@@ -91,4 +92,21 @@ public class Player
 	public void setMissionIdsCompleted(List<Integer> missionIdsCompleted) {
 		this.missionIdsCompleted = missionIdsCompleted;
 	}
+
+	public PlayerCredentials getCredentials() {
+		return credentials;
+	}
+
+	public void setCredentials(PlayerCredentials credentials) {
+		this.credentials = credentials;
+	}
+
+	public List<MissionProgress> getMissionProgress() {
+		return missionProgress;
+	}
+
+	public void setMissionProgress(List<MissionProgress> missionProgress) {
+		this.missionProgress = missionProgress;
+	}
+
 }

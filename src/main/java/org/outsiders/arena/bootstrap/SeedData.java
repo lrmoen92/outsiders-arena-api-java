@@ -10,6 +10,9 @@ import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Conditional;
 import org.outsiders.arena.domain.Cost;
 import org.outsiders.arena.domain.Effect;
+import org.outsiders.arena.domain.Faction;
+import org.outsiders.arena.domain.Mission;
+import org.outsiders.arena.domain.MissionRequirement;
 import org.outsiders.arena.domain.Quality;
 import org.outsiders.arena.domain.Stat;
 import org.outsiders.arena.service.CharacterService;
@@ -31,6 +34,7 @@ public class SeedData
     throws Exception
   {  
     makeOutsiders();
+    makeMissions();
     LOG.info("ALL DATA SEEDED SUCCESSFULLY");
   }
   
@@ -134,7 +138,40 @@ public class SeedData
 	 LOG.info("Saved new Character: " + makeGeddy().toString());
 	 LOG.info("Saved new Character: " + makeTristane().toString());
   }
+
   
+  private void makeMissions() {
+	 LOG.info("Saved new Mission: " + makeTristaneMission().toString());
+  }
+  
+  private Mission makeTristaneMission() {
+	  Mission m = new Mission();
+	  
+	  m.setId(1);
+	  m.setAvatarUrl("/assets/tristane.png");
+	  m.setCharacterIdUnlocked(6);
+	  m.setDescription("Gotta complete a job for Tristane.");
+	  m.setMinmumLevel(0);
+	  m.setName("Guild Duties");
+	  
+	  List<MissionRequirement> requirements = new ArrayList<>();
+	  
+	  MissionRequirement mq1 = new MissionRequirement();
+	  mq1.setMissionId(m.getId());
+	  mq1.setAmount(3);
+	  mq1.setUserFaction(Faction.ALEX);
+	  
+	  MissionRequirement mq2 = new MissionRequirement();
+	  mq2.setMissionId(m.getId());
+	  mq2.setAmount(3);
+	  mq2.setUserFaction(Faction.GEDDY);
+	  
+	  requirements.add(mq1);
+	  requirements.add(mq2);
+	  m.setRequirements(requirements);
+	  
+	  return m;
+  }
   
   private Character makeAlex() {
 	  // EFFECTS 1

@@ -4,8 +4,8 @@ import java.util.List;
 
 public class CostCheckDTO {
 	
-	List<AbilityTargetDTO> chosenAbilities;
-	List<List<String>> allyCosts;
+	private List<AbilityTargetDTO> chosenAbilities;
+	private List<List<String>> allyCosts;
 	
 	public List<AbilityTargetDTO> getChosenAbilities() {
 		return chosenAbilities;

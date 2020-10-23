@@ -641,7 +641,9 @@ public class BattleMessageService {
     	for (CharacterInstance ch : units) {
     		for (int cd : ch.getCooldowns()) {
     			// this is specific to return CD length in a cryptic way i guess lol
-    			input[counter] = -1 - cd;
+    			if (cd > 0) {
+        			input[counter] = -1 - cd;
+    			}
             	counter++;
     		}
     	}

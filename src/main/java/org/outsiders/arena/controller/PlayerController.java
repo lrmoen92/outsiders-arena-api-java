@@ -1,6 +1,7 @@
 package org.outsiders.arena.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +176,7 @@ public class PlayerController
     	      player.setAvatarUrl(message.getAvatarUrl());
     	      int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
     	      player.setId(randomNum);
+    	      player.setCharacterIdsUnlocked(Arrays.asList(1, 2, 3, 4, 5));
     	      player = this.playerService.save(player);
     	      LOG.info("Created new Player: " + player.toString());
     	}

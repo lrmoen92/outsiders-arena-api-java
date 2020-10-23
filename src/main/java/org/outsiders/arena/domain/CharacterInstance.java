@@ -14,7 +14,6 @@ public class CharacterInstance
   // player 1 (0, 1, 2) player 2 (3, 4, 5)
   private int position;
   private int characterId;
-  // EffectHolder class is built like this map essentially maybe even better :O
   
   private List<BattleEffect> effects = new ArrayList<>();
   // store conditional flags here
