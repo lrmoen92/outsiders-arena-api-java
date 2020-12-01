@@ -19,6 +19,9 @@ public class Mission {
 	private int characterIdUnlocked;
 	private List<MissionRequirement> requirements;
 	
+	public String toString() {
+		return "Name: " + this.name + ", Id: " + this.id;
+	}
 	
 	public int getId() {
 		return id;

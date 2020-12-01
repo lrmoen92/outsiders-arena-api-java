@@ -49,10 +49,6 @@ public class BattleMessageService {
     private Integer getMapEntryAsInt(String key, Map m) {
     	return ((Double) m.get(key)).intValue();
     }
-    
-    private String getMapEntryAsString(String key, Map m) {
-    	return m.get(key).toString();
-    }
 
     public String handleMatchmakingMessage(Map valueMap) {
         Battle savedBattle = null;
@@ -276,7 +272,7 @@ public class BattleMessageService {
         // deal out more energy at the end
         if (bPost.getTurn() != 1) {
         	int count = 0;
-	        if (playerId == b.getPlayerIdOne()) {
+	        if (isPlayerOne) {
 	        	for (CharacterInstance c : bPost.getPlayerTwoTeam()) {
 	        		if (!c.isDead()) {
 	        			count++;
@@ -301,7 +297,7 @@ public class BattleMessageService {
 
         bPost = battleService.save(bPost);
         LOG.info(bPost.toString());
-        String responseJson = "{\"type\": \"END\", \"playerId\": " + playerId + ", \"battle\": " + new Gson().toJson(bPost) + "}";
+        String responseJson = "{\"type\": \"END\", \"isPlayerOne\": " + isPlayerOne + ", \"battle\": " + new Gson().toJson(bPost) + "}";
         return responseJson;
     }
 
@@ -398,15 +394,13 @@ public class BattleMessageService {
         //TODO: V build the object and throw it in here, front end should be good
 
         dto.setTargetPositions(tarPos);
-        
-        // (dont do this: deprecated) set character instances as highlighted if they can be targeted (no need to save i guess?)
-        
+                
         String responseJson = "{\"type\": \"TCHECK\", \"playerId\": " + playerId + ", \"dto\": " + new Gson().toJson(dto) + "}";
         return responseJson;
     }
     
     public String handleSurrenderMessage(Map valueMap) throws Exception {
-
+    	
         LOG.info("Surrender");
         Integer playerId = getMapEntryAsInt("playerId", valueMap);
         
@@ -416,7 +410,6 @@ public class BattleMessageService {
         LOG.info(responseJson.toString());
         return responseJson;
     }
-    
 
     public String handleCostCheckMessage(Map valueMap) throws Exception {
         // respond with an array of the abilities that CAN be cast
@@ -551,6 +544,10 @@ public class BattleMessageService {
         LOG.info(responseJson.toString());
         return responseJson;
     }
+    
+    
+    
+    
     
     public Integer[] checkIfStunned(Integer[] input, List<Character> team, List<CharacterInstance> instances) {
     	for(int i = 0; i < 3 ; i++) {
