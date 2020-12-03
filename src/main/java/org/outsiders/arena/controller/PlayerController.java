@@ -10,12 +10,15 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.h2.util.StringUtils;
 import org.outsiders.arena.domain.Character;
+import org.outsiders.arena.domain.Mission;
 import org.outsiders.arena.domain.Player;
 import org.outsiders.arena.domain.PlayerCredentials;
 import org.outsiders.arena.domain.PlayerMessage;
 import org.outsiders.arena.service.CharacterService;
+import org.outsiders.arena.service.MissionService;
 import org.outsiders.arena.service.PlayerService;
-import org.outsiders.arena.util.SortById;
+import org.outsiders.arena.util.SortCharactersById;
+import org.outsiders.arena.util.SortMissionsById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,10 @@ public class PlayerController
   
   @Autowired
   private CharacterService characterService;
+  
+  @Autowired
+  private MissionService missionService;
+  
   
   // player id - arena id
   private Map<Integer, Integer> privateMatchMaking = new HashMap<>();
@@ -240,10 +247,18 @@ public class PlayerController
   public List<Character> getAllCharacters() {
 	  List<Character> list = new ArrayList<Character>();
 	  characterService.findAll().forEach(list::add);
-	  list.sort(new SortById());
+	  list.sort(new SortCharactersById());
 	  return list;
   }
+
   
+  @RequestMapping(value={"/api/mission/"}, method=RequestMethod.GET)
+  public List<Mission> getAllMissions() {
+	  List<Mission> list = new ArrayList<Mission>();
+	  missionService.findAll().forEach(list::add);
+	  list.sort(new SortMissionsById());
+	  return list;
+  }
 
 	public synchronized boolean existsInStagedGames(Integer in) {
 		return this.stagedGames.containsKey(in);
