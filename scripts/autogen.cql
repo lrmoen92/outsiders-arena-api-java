@@ -32,7 +32,7 @@ CREATE TYPE outsiders_arena.missionrequirement (
 );
 
 CREATE TYPE outsiders_arena.missionprogress (
-    progress list<frozen<missionrequirement>>
+    requirements list<frozen<missionrequirement>>
 );
 
 CREATE TYPE outsiders_arena.characterinstance (

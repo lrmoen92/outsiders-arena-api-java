@@ -10,6 +10,8 @@ public abstract interface PlayerService
   
   public abstract Player findByDisplayName(String name);
   
+  public abstract Player findByEmail(String email);
+  
   public abstract Iterable<Player> saveAll(Iterable<Player> paramIterable);
   
   public abstract Optional<Player> findById(Integer paramInteger);

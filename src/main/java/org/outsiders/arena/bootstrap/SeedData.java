@@ -16,6 +16,7 @@ import org.outsiders.arena.domain.MissionRequirement;
 import org.outsiders.arena.domain.Quality;
 import org.outsiders.arena.domain.Stat;
 import org.outsiders.arena.service.CharacterService;
+import org.outsiders.arena.service.MissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class SeedData
   private static final Logger LOG = LoggerFactory.getLogger(SeedData.class);
   @Autowired
   private CharacterService characterService;
+  @Autowired
+  private MissionService missionService;
   
   public void run(String... args)
     throws Exception
@@ -170,7 +173,7 @@ public class SeedData
 	  requirements.add(mq2);
 	  m.setRequirements(requirements);
 	  
-	  return m;
+	  return this.missionService.save(m);
   }
   
   private Character makeAlex() {

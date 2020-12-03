@@ -20,7 +20,18 @@ public class PlayerServiceImpl
   {
     return (Player)this.repo.save(entity);
   }
+
   
+  public Player findByEmail(String email){
+	  for (Player p : repo.findAll()) {
+		  if (p.getCredentials() != null) {
+			  if (p.getCredentials().getEmail().equals(email)) {
+				  return p;
+			  }
+		  }
+	  }
+	  return null;
+  };
   
   public Player findByDisplayName(String name){
 	  for (Player p : repo.findAll()) {

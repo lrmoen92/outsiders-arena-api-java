@@ -57,10 +57,12 @@ public class BattleMessageService {
         Integer characterId3 = getMapEntryAsInt("char3", valueMap);
         Integer playerId = getMapEntryAsInt("playerId", valueMap);
         Integer arenaId = getMapEntryAsInt("arenaId", valueMap);
+        String queue = valueMap.get("queue").toString();
     	Battle battle = this.battleService.getByArenaId(arenaId);
         if (battle == null) {
 	        battle = new Battle();
 	        battle.setId(this.nrg.randomInt());
+	        battle.setQueue(queue);
 	        battle.setArenaId(arenaId);
 	        battle.setPlayerIdOne(playerId.intValue());
 	        ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
@@ -135,33 +137,22 @@ public class BattleMessageService {
         // TODO:
         // this can be cleaned up with object mapper
         int playerId = getMapEntryAsInt("playerId", valueMap);
-        Map<String, Double> m = (Map) valueMap.get("spent");
+        List<String> m = (List) valueMap.get("spent");
         String chosen = valueMap.get("chosen").toString();
         Battle b = battleService.getByPlayerId(playerId);
         
         if(b.getPlayerIdOne() == playerId) {
-        	for (Entry<String, Double> e : m.entrySet()) {
-        		String energy = e.getKey();
-        		int amount = (int) Math.round(e.getValue());
-        		int newVal = b.getPlayerOneEnergy().get(energy) - amount;
-        		if (newVal < 0) {
-        			throw new Exception();
-        		}
-        		b.getPlayerOneEnergy().put(energy,  newVal);
+        	for (String s : m) {
+        		int newVal = b.getPlayerOneEnergy().get(s) - 1;
+        		b.getPlayerOneEnergy().put(s,  newVal);
         	}
         	
         	int i =b.getPlayerOneEnergy().get(chosen);
         	b.getPlayerOneEnergy().put(chosen, i+1);
         } else {
-        	
-        	for (Entry<String, Double> e : m.entrySet()) {
-        		String energy = e.getKey();
-        		int amount = (int) Math.round(e.getValue());
-        		int newVal = b.getPlayerTwoEnergy().get(energy) - amount;
-        		if (newVal < 0) {
-        			throw new Exception();
-        		}
-        		b.getPlayerTwoEnergy().put(energy,  newVal);
+        	for (String s : m) {
+        		int newVal = b.getPlayerTwoEnergy().get(s) - 1;
+        		b.getPlayerTwoEnergy().put(s,  newVal);
         	}
         	
         	int i =b.getPlayerTwoEnergy().get(chosen);

@@ -21,6 +21,7 @@ public class Battle
   private int id;
   private boolean playerOneStart = new Random().nextBoolean();
   private String status;
+  private String queue;
   private int turn = 0;
   private int arenaId;
   private int playerIdOne;
@@ -172,6 +173,14 @@ public Map<String, Integer> getPlayerTwoEnergy() {
 
 public void setPlayerTwoEnergy(Map<String, Integer> playerTwoEnergy) {
 	this.playerTwoEnergy = playerTwoEnergy;
+}
+
+public String getQueue() {
+	return queue;
+}
+
+public void setQueue(String queue) {
+	this.queue = queue;
 }
 
 }

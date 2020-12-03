@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.h2.util.StringUtils;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Player;
+import org.outsiders.arena.domain.PlayerCredentials;
 import org.outsiders.arena.domain.PlayerMessage;
 import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.service.PlayerService;
@@ -17,6 +19,8 @@ import org.outsiders.arena.util.SortById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,8 +38,8 @@ public class PlayerController
   @Autowired
   private CharacterService characterService;
   
-  // player name - arena id
-  private Map<String, Integer> privateMatchMaking = new HashMap<>();
+  // player id - arena id
+  private Map<Integer, Integer> privateMatchMaking = new HashMap<>();
   
   // player id - level
   private Map<Integer, Integer> publicMatchMaking = new HashMap<>();
@@ -45,6 +49,23 @@ public class PlayerController
   
   // player id - arena id
   private Map<Integer, Integer> stagedGames = new HashMap<>();
+  
+  
+  @RequestMapping(value={"/api/player/arena/{playerId}/{opponentName}"}, method=RequestMethod.GET)
+  public int getArenaForPlayer(@PathVariable int playerId, @PathVariable String opponentName) {
+	  Player opponent = this.playerService.findByDisplayName(opponentName);
+	  
+	  if (this.getPrivateMatchMaking().get(opponent.getId()) != null) {
+		  int arenaId = this.removeFromPrivateMatchMaking(opponent.getId());
+		  LOG.info("Player ID: (" + playerId + ") found opponent named " + opponentName + " with Arena ID: (" + arenaId + ")");
+		  return arenaId;
+	  } else {
+	      int randomNum = ThreadLocalRandom.current().nextInt(10000000, 99999999);
+	      this.addToPrivateMatchMaking(playerId, randomNum);
+		  LOG.info("Player ID: (" + playerId + ") could not find opponent named " + opponentName + ".  Waiting with Arena ID: (" + randomNum + ")");
+		  return randomNum;
+	  }
+  }
   
 
   @RequestMapping(value= {"/api/player/arena/ladder/{playerId}/{playerLevel}"}, method=RequestMethod.GET)
@@ -163,40 +184,55 @@ public class PlayerController
 	  return output;
   }
   
-  @RequestMapping(value={"/api/player/"}, method=RequestMethod.POST)
-  public Player getOrCreatePlayer(@RequestBody PlayerMessage message)
+  @RequestMapping(value={"/api/player/signup/"}, method=RequestMethod.POST)
+  public Player createPlayer(@RequestBody PlayerMessage message)
   {
-    	Player player = this.playerService.findByDisplayName(message.getDisplayName());
-    	if (player != null) {
-    		LOG.info(player.getDisplayName() + " logged in");
-    	      return player;
-    	} else {
-    		player = new Player();
-    	      player.setDisplayName(message.getDisplayName());
-    	      player.setAvatarUrl(message.getAvatarUrl());
-    	      int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
-    	      player.setId(randomNum);
-    	      player.setCharacterIdsUnlocked(Arrays.asList(1, 2, 3, 4, 5));
-    	      player = this.playerService.save(player);
-    	      LOG.info("Created new Player: " + player.toString());
-    	}
-
-      return player;
+	Player player = new Player();
+	PlayerCredentials creds = new PlayerCredentials();
+	creds.setEmail(message.getEmail());
+	creds.setPassword(message.getPassword());
+	int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
+	player.setId(randomNum);
+	if (StringUtils.isNullOrEmpty(message.getName())) {
+		message.setName("NPC " + (Math.floor(Math.random() * 1000000)));
+	}
+	if (StringUtils.isNullOrEmpty(message.getAvatar())) {
+		message.setAvatar("https://tinyurl.com/y5lpta2s");
+	}
+	player.setDisplayName(message.getName());
+	player.setAvatarUrl(message.getAvatar());
+	player.setCredentials(creds);
+	player.setCharacterIdsUnlocked(Arrays.asList(1, 2, 3, 4, 5));
+	player = this.playerService.save(player);
+	LOG.info("Created new Player: " + player.toString());
+	
+	return player;
 
   }
   
-  @RequestMapping(value={"/api/player/arena/{playerId}/{opponentName}"}, method=RequestMethod.GET)
-  public int getArenaForPlayer(@PathVariable int playerId, @PathVariable String opponentName) {
-	  if (privateMatchMaking.get(opponentName) != null) {
-		  int arenaId = privateMatchMaking.get(opponentName);
-		  privateMatchMaking.remove(opponentName);
-		  LOG.info("Player ID: (" + playerId + ") found opponent named " + opponentName + " with Arena ID: (" + arenaId + ")");
-		  return arenaId;
+  @RequestMapping(value={"/api/player/login/"}, method=RequestMethod.POST)
+  public Player getPlayer(@RequestBody PlayerMessage message)
+  {
+	  Player player;
+	  if (StringUtils.isNullOrEmpty(message.getName())) {
+		  player = this.playerService.findByEmail(message.getEmail());
 	  } else {
-	      int randomNum = ThreadLocalRandom.current().nextInt(10000000, 99999999);
-		  privateMatchMaking.put(playerService.findById(playerId).get().getDisplayName(), randomNum);
-		  LOG.info("Player ID: (" + playerId + ") could not find opponent named " + opponentName + ".  Waiting with Arena ID: (" + randomNum + ")");
-		  return randomNum;
+		  player = this.playerService.findByDisplayName(message.getName());
+	  }
+	  
+	  LOG.info(player.getCredentials().getEmail());
+	  LOG.info(player.getCredentials().getPassword());
+	  
+	  if (!player.getCredentials().getPassword().equals(message.getPassword())) {
+  		LOG.info(player + " not logged in");
+  		return null;
+//  		ResponseEntity<Player> e = new ResponseEntity<Player>(new Player(), HttpStatus.UNAUTHORIZED);
+//  		return e;
+	  } else {
+  		LOG.info(player.getDisplayName() + " logged in");
+  		return player;
+//  		ResponseEntity<Player> e = new ResponseEntity<Player>(player, HttpStatus.ACCEPTED);
+//  		return e;
 	  }
   }
   
@@ -293,6 +329,18 @@ public class PlayerController
 		return output;
 	}
 	
+	public synchronized Map<Integer, Integer> getPrivateMatchMaking() {
+		return this.privateMatchMaking;
+	}
+	
+	public synchronized void addToPrivateMatchMaking(Integer in, Integer in2) {
+		this.privateMatchMaking.put(in, in2);
+	}
+	
+	public synchronized int removeFromPrivateMatchMaking(Integer in) {
+		return this.privateMatchMaking.remove(in);
+	}
+	
 	public synchronized Set<Map.Entry<Integer, Integer>> getPublicMatchMakingEntries() {
 		return this.publicMatchMaking.entrySet();
 	}
@@ -301,8 +349,8 @@ public class PlayerController
 		this.publicMatchMaking.put(in, in2);
 	}
 	
-	public synchronized void removeFromPublicMatchMaking(Integer in) {
-		this.publicMatchMaking.remove(in);
+	public synchronized int removeFromPublicMatchMaking(Integer in) {
+		return this.publicMatchMaking.remove(in);
 	}
 	
 }
