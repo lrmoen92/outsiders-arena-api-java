@@ -21,7 +21,7 @@ public class MissionRequirement {
 	@JsonGetter
 	public String getDescription() {
 		StringBuilder result = new StringBuilder();
-		List<Character> vowels = Arrays.asList('a', 'e', 'i', 'o', 'u');
+		List<Character> vowels = Arrays.asList('A', 'E', 'I', 'O', 'U');
 		
 		result.append("Win " + amount + " game");
 		if (amount != 1) {
@@ -30,9 +30,9 @@ public class MissionRequirement {
 		
 		if (userFaction != null) {
 			char one = userFaction.toCharArray()[0];
-			String an = "a";
+			String an = "a ";
 			if(vowels.contains(one)) {
-				an = "an";
+				an = "an ";
 			}
 			
 			result.append(" with " + an + userFaction);
@@ -40,9 +40,9 @@ public class MissionRequirement {
 		
 		if (targetFaction != null) {
 			char one = targetFaction.toCharArray()[0];
-			String an = "a";
+			String an = "a ";
 			if(vowels.contains(one)) {
-				an = "an";
+				an = "an ";
 			}
 			
 			result.append(" vs " + an + targetFaction);

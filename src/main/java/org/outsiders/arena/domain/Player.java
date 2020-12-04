@@ -2,9 +2,12 @@ package org.outsiders.arena.domain;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Table
 public class Player
@@ -17,11 +20,81 @@ public class Player
   // rank
   private int level;
   // raw xp (lp)
+  // 0/100  (+30, +20, +10) (-25, -15, -5)
   private int xp;
-  private List<Integer> missionIdsCompleted;
-  private List<Integer> characterIdsUnlocked;
+  private Set<Integer> missionIdsCompleted;
+  private Set<Integer> characterIdsUnlocked;
   // mission id, current amount (as opposed to total amount needed)
   private List<MissionProgress> missionProgress;
+  
+  @JsonIgnore
+  private int loseXP(int i) {
+	  int x = this.getXp();
+	  
+	  int res = x - i;
+	  
+	  if (res < 0) {
+		  // demote
+		  res = 100 - Math.abs(res);
+		  int l = this.getLevel();
+		  if (l > 1) {
+			  this.setLevel(l - 1);
+		  } else {
+			  this.setXp(0);
+		  }
+	  } else {
+		  this.setXp(res);
+	  }
+	  
+	  return i;
+  }
+  
+  @JsonIgnore
+  private int gainXP(int i) {
+	  int x = this.getXp();
+	  
+	  int res = x + i;
+	  
+	  if (res > 99) {
+		  // rankup
+		  res = res - 100;
+		  int l = this.getLevel();
+		  this.setLevel(l + 1);
+		  this.setXp(res);
+	  } else {
+		  this.setXp(res);
+	  }
+	  
+	  return i;
+  }
+  
+  @JsonIgnore
+  public int loseBattleXP(Player opponent) {
+	  if (opponent.getLevel() > this.getLevel()) {
+		  return this.loseXP(5);
+		  // lose low xp
+	  } else if (opponent.getLevel() < this.getLevel()) {
+		  return this.loseXP(25);
+		  // lose high xp
+	  } else {
+		  return this.loseXP(15);
+		  // lose moderate xp
+	  }
+  }
+  
+  @JsonIgnore
+  public int winBattleXP(Player opponent) {
+	  if (opponent.getLevel() > this.getLevel()) {
+		  return this.gainXP(30);
+		  // reward high xp
+	  } else if (opponent.getLevel() < this.getLevel()) {
+		  return this.gainXP(10);
+		  // reward low xp
+	  } else {
+		  return this.gainXP(20);
+		  // reward moderate xp
+	  }
+  }
   
   public int getId()
   {
@@ -77,19 +150,19 @@ public class Player
 		this.xp = xp;
 	}
 
-	public List<Integer> getCharacterIdsUnlocked() {
+	public Set<Integer> getCharacterIdsUnlocked() {
 		return characterIdsUnlocked;
 	}
 
-	public void setCharacterIdsUnlocked(List<Integer> characterIdsUnlocked) {
+	public void setCharacterIdsUnlocked(Set<Integer> characterIdsUnlocked) {
 		this.characterIdsUnlocked = characterIdsUnlocked;
 	}
 
-	public List<Integer> getMissionIdsCompleted() {
+	public Set<Integer> getMissionIdsCompleted() {
 		return missionIdsCompleted;
 	}
 
-	public void setMissionIdsCompleted(List<Integer> missionIdsCompleted) {
+	public void setMissionIdsCompleted(Set<Integer> missionIdsCompleted) {
 		this.missionIdsCompleted = missionIdsCompleted;
 	}
 

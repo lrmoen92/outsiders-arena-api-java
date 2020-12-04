@@ -32,6 +32,7 @@ CREATE TYPE outsiders_arena.missionrequirement (
 );
 
 CREATE TYPE outsiders_arena.missionprogress (
+    missionid int,
     requirements list<frozen<missionrequirement>>
 );
 
@@ -85,6 +86,7 @@ CREATE TABLE outsiders_arena.battle (
     id int PRIMARY KEY,
     playeronestart boolean,
     status text,
+    queue text,
     turn int,
     arenaid int,
     playeridone int,
@@ -113,8 +115,8 @@ CREATE TABLE outsiders_arena.player (
     credentials frozen<playercredentials>,
     level int,
     xp int,
-    characteridsunlocked list<int>,
-    missionidscompleted list<int>,
+    characteridsunlocked set<int>,
+    missionidscompleted set<int>,
     missionprogress list<frozen<missionprogress>>
 );
 

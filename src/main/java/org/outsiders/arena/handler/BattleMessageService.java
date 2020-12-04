@@ -17,11 +17,16 @@ import org.outsiders.arena.domain.CharacterInstance;
 import org.outsiders.arena.domain.CostCheckDTO;
 import org.outsiders.arena.domain.Effect;
 import org.outsiders.arena.domain.Energy;
+import org.outsiders.arena.domain.Faction;
+import org.outsiders.arena.domain.Mission;
+import org.outsiders.arena.domain.MissionProgress;
+import org.outsiders.arena.domain.MissionRequirement;
 import org.outsiders.arena.domain.Player;
 import org.outsiders.arena.domain.Quality;
 import org.outsiders.arena.domain.Stat;
 import org.outsiders.arena.service.BattleService;
 import org.outsiders.arena.service.CharacterService;
+import org.outsiders.arena.service.MissionService;
 import org.outsiders.arena.service.PlayerService;
 import org.outsiders.arena.util.NRG;
 import org.slf4j.Logger;
@@ -41,6 +46,8 @@ public class BattleMessageService {
     protected PlayerService playerService;
     @Autowired
     protected CharacterService characterService;
+    @Autowired
+    protected MissionService missionService;
     @Autowired
     protected NRG nrg;
     
@@ -390,14 +397,243 @@ public class BattleMessageService {
         return responseJson;
     }
     
-    public String handleSurrenderMessage(Map valueMap) throws Exception {
+    public String handleGameEndMessage(Map valueMap) throws Exception {
     	
-        LOG.info("Surrender");
-        Integer playerId = getMapEntryAsInt("playerId", valueMap);
+        LOG.info("Game End");
         
-        // TODO: actually clean up the battle
         
-        String responseJson = "{\"type\": \"SURRENDER\", \"playerId\": " + playerId + "}";
+        Integer loserId = getMapEntryAsInt("loserId", valueMap);
+        Integer winnerId = getMapEntryAsInt("winnerId", valueMap);
+        Integer arenaId = getMapEntryAsInt("arenaId", valueMap);
+
+        
+        Player loser = this.playerService.findById(loserId).get();
+        Player winner = this.playerService.findById(winnerId).get();
+        
+        Battle battle = this.battleService.getByArenaId(arenaId);
+        String queue = battle.getQueue();
+        battle.setStatus("ENDED");
+        Battle saved = this.battleService.save(battle);
+        
+        boolean playerOneWon = battle.getPlayerIdOne() == winner.getId();
+        List<Mission> missions = (List<Mission>) this.missionService.findAll();
+        List<Character> characters = this.characterService.getCharactersForBattle(saved);
+        List<CharacterInstance> winningTeam = playerOneWon? battle.getPlayerOneTeam() : battle.getPlayerTwoTeam();
+        List<CharacterInstance> losingTeam = playerOneWon? battle.getPlayerTwoTeam() : battle.getPlayerOneTeam();
+        this.battleService.delete(battle);
+        
+        int xpLost = 0;
+        int xpGain = 0;
+        boolean lvLost = false;
+        boolean lvGain = false;
+        
+        if (queue.equals("LADDER")) {
+            int oldLv1 = winner.getLevel();
+            int oldLv2 = loser.getLevel();
+            
+            xpLost = loser.loseBattleXP(winner);
+            xpGain = winner.winBattleXP(loser);
+
+            int newLv1 = winner.getLevel();
+            int newLv2 = loser.getLevel();
+            
+            lvLost = newLv2 < oldLv2;
+            lvGain = newLv1 > oldLv1;
+        }
+        
+        // TODO: CHECK MISSIONS HERE
+        boolean missionProgress = false;
+        boolean characterUnlocked = false; 
+        if (!queue.equals("PRIVATE")) {
+
+            List<String> winningFacts = new ArrayList<>();
+            List<String> losingFacts = new ArrayList<>();
+            
+            for (CharacterInstance c : winningTeam) {
+            	for (Character character : characters) {
+            		if (character.getId() == c.getCharacterId()) {
+            			character.getFactions().forEach(f -> {
+            				winningFacts.add(f);
+            			});
+            		}
+            	}
+            }
+            
+            for (CharacterInstance c : losingTeam) {
+            	for (Character character : characters) {
+            		if (character.getId() == c.getCharacterId()) {
+            			character.getFactions().forEach(f -> {
+            				losingFacts.add(f);
+            			});
+            		}
+            	}
+            }
+            
+            List<Integer> currentMissions = new ArrayList<>();
+            List<Integer> missionsToMarkDone = new ArrayList<>();
+            for (MissionProgress mp : winner.getMissionProgress()) {
+				boolean finished = true;
+				boolean characterUnlock = false;
+            	currentMissions.add(mp.getMissionId());
+            	Mission target = null;
+            	for (MissionRequirement req : mp.getRequirements()) {
+            		for (Mission mis : missions) {
+    					if (mp.getMissionId() == mis.getId()) {
+    						currentMissions.add(mp.getMissionId());
+    						target = mis;
+    					}
+            		}
+    				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {
+    					missionProgress = true;
+    					int old = req.getAmount();
+    					int cur = old + 1;
+    					int idUnlock = target.getCharacterIdUnlocked();
+    					characterUnlock = idUnlock > 0;
+    					for (MissionRequirement tar : target.getRequirements()) {
+    						if (!(cur > tar.getAmount())) {
+    							req.setAmount(cur);
+    						}
+    						if (cur != tar.getAmount()) {
+    							finished = false;
+    						}
+    					}
+    				} else {
+    					finished = false;
+    				}
+    				
+    				if (finished) {
+    					missionsToMarkDone.add(mp.getMissionId());
+    					if (characterUnlock) {
+    						characterUnlocked = true;
+    						winner.getCharacterIdsUnlocked().add(target.getCharacterIdUnlocked());
+    					}
+    				}
+            	}
+            }
+            
+            for (Integer i : missionsToMarkDone) {
+            	winner.getMissionIdsCompleted().add(i);
+            	
+            	winner.getMissionProgress().removeIf((x) -> {
+            		return x.getMissionId() == i;
+            	});
+            }
+            
+            missionsToMarkDone.clear();
+            
+            // check undone missions
+            for (Mission m : missions) {
+				boolean finished = true;
+				boolean characterUnlock = false;
+            	if (!winner.getMissionIdsCompleted().contains(m.getId()) && !currentMissions.contains(m.getId())) {
+                	List<MissionRequirement> reqs = m.getRequirements();
+                	if (m.getMinmumLevel() < winner.getLevel()) {
+                		if (m.getPrerequisiteMissionId() > 0) {
+                    		if (winner.getMissionIdsCompleted().contains(m.getPrerequisiteMissionId())){
+                    			for (MissionRequirement req : m.getRequirements()) {
+                    				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {
+                    					missionProgress = true;
+                    					int old = req.getAmount();
+                    					int cur = old + 1;
+                    					int idUnlock = m.getCharacterIdUnlocked();
+                    					characterUnlock = idUnlock > 0;
+                    					for (MissionRequirement tar : m.getRequirements()) {
+                    						if (!(cur > tar.getAmount())) {
+                    							req.setAmount(cur);
+                    						}
+                    						if (cur != tar.getAmount()) {
+                    							finished = false;
+                    						}
+                    					}
+                    				} else {
+                    					finished = false;
+                    				}
+                    				
+                    				if (finished) {
+                    					missionsToMarkDone.add(m.getId());
+                    					if (characterUnlock) {
+                    						characterUnlocked = true;
+                    						winner.getCharacterIdsUnlocked().add(m.getCharacterIdUnlocked());
+                    					}
+                    				}
+                    			}
+                    		}
+                		} else {
+                			for (MissionRequirement req : m.getRequirements()) {
+                				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {
+                					missionProgress = true;
+                					int old = req.getAmount();
+                					int cur = old + 1;
+                					int idUnlock = m.getCharacterIdUnlocked();
+                					characterUnlock = idUnlock > 0;
+                					for (MissionRequirement tar : m.getRequirements()) {
+                						if (!(cur > tar.getAmount())) {
+                							req.setAmount(cur);
+                						}
+                						if (cur != tar.getAmount()) {
+                							finished = false;
+                						}
+                					}
+                				} else {
+                					finished = false;
+                				}
+                				
+                				if (finished) {
+                					missionsToMarkDone.add(m.getId());
+                					if (characterUnlock) {
+                						characterUnlocked = true;
+                						winner.getCharacterIdsUnlocked().add(m.getCharacterIdUnlocked());
+                					}
+                				}
+                			}
+                		}
+                	}
+            	}
+            }
+            
+            for (Integer i : missionsToMarkDone) {
+            	winner.getMissionIdsCompleted().add(i);
+            }
+            
+            missionsToMarkDone.clear();
+            
+        }
+        
+        this.playerService.save(loser);
+        this.playerService.save(winner);
+        
+        String winnerString;
+        String loserString;
+        
+        StringBuilder sbw = new StringBuilder();
+        StringBuilder sbl = new StringBuilder();
+        
+        sbw.append("CONGRATULATIONS!  You've won a " + queue.toLowerCase() + " battle against " + loser.getDisplayName() + ". You've gained " + xpGain + " experience" + (lvGain ? "\", and ranked up!\"" : "!"));
+        sbl.append("BETTER LUCK NEXT TIME!  You've lost a " + queue.toLowerCase() + " battle against " + winner.getDisplayName() + ". You've lost " + xpLost + " experience" + (lvLost ? "\", and demoted...\"" : "!"));
+        
+        if(missionProgress) {
+        	String missionString = "";
+        	
+        	// TODO CHECK MISSION PROGRESS
+        	
+            sbw.append("RETURN-CARRIAGE");
+            sbw.append("Progress made on the following missions: " + missionString);
+        }
+        
+        if(characterUnlocked) {
+        	String characterString = "";
+        	
+        	// TODO CHECK CHARACTER PROGRESS
+            sbw.append("RETURN-CARRIAGE");
+            sbw.append("New Character Unlocked!  " + characterString);
+        }
+        
+        winnerString = "\"" + sbw.toString() + "\"";
+        loserString = "\"" + sbl.toString() + "\"";
+        
+        // TODO: can verify here playerOneVictory(), or two, depending on the ids
+        
+        String responseJson = "{\"type\": \"GAME_END\", \"playerOneWon\": " + playerOneWon + ", \"winnerString\": " + winnerString + ", \"loserString\": " + loserString + "}";
         LOG.info(responseJson.toString());
         return responseJson;
     }
@@ -451,6 +687,7 @@ public class BattleMessageService {
 	        	charPos[abilityTargetDto.getCharacterPosition()] = -1;
 	        	for (String string : ability.getCost()) {
 	        		if (string.equals(Energy.RANDOM)) {
+	        			// TODO: FIX THIS FOR COLOR COSTS CHECKS TO WORK RIGHT
         				spentEnergy.put(Energy.RANDOM, spentEnergy.get(Energy.RANDOM) + 1);
 	        		} else if (string.equals(Energy.STRENGTH)) {
         				spentEnergy.put(Energy.STRENGTH, spentEnergy.get(Energy.STRENGTH) + 1);

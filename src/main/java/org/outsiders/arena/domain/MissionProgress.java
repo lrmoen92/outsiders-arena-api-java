@@ -9,6 +9,7 @@ import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 @UserDefinedType
 public class MissionProgress {
 	
+	private int missionId;
 	private List<MissionRequirement> requirements;
 	
 
@@ -17,6 +18,12 @@ public class MissionProgress {
 	}
 	public void setRequirements(List<MissionRequirement> requirements) {
 		this.requirements = requirements;
+	}
+	public int getMissionId() {
+		return missionId;
+	}
+	public void setMissionId(int missionId) {
+		this.missionId = missionId;
 	}
 	
 }

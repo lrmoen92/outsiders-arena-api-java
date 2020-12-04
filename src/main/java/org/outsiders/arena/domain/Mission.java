@@ -20,7 +20,12 @@ public class Mission {
 	private List<MissionRequirement> requirements;
 	
 	public String toString() {
-		return "Name: " + this.name + ", Id: " + this.id;
+		StringBuilder sb = new StringBuilder();
+		for (MissionRequirement m : this.requirements) {
+			sb.append(m.getDescription() + ", ");
+		}
+		sb.delete(sb.length()-2 , sb.length());
+		return "Name: " + this.name + ", Id: " + this.id + ", Description: " + sb.toString();
 	}
 	
 	public int getId() {

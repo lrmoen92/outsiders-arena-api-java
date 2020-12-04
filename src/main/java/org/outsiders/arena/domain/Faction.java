@@ -12,6 +12,7 @@ public class Faction {
 	  public static final String HOLLYANNA = "HOLLYANNA";
 	  public static final String TRISTANE = "TRISTANE";
 	  
-	  
-	  public static final List<String> OUTSIDERS = Arrays.asList(ALEX, GEDDY, SHINZO, FAINNE, HOLLYANNA);
+
+	  public static final String OUTSIDERS = "OUTSIDERS";
+	  public static final List<String> OUTSIDERS_LIST = Arrays.asList(ALEX, GEDDY, SHINZO, FAINNE, HOLLYANNA);
 }

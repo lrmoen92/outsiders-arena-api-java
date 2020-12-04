@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.util.Arrays;
 import org.outsiders.arena.domain.Ability;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Conditional;
@@ -250,6 +251,10 @@ public class SeedData
 	  c.setName("Alex Drake");
 	  c.setAvatarUrl("/assets/alex.png");
 	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.ALEX);
+	  facts.add(Faction.OUTSIDERS);
+	  c.setFactions(facts);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -334,6 +339,10 @@ public class SeedData
 	  c.setName("Fainne");
 	  c.setAvatarUrl("/assets/fainne.png");
 	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.FAINNE);
+	  facts.add(Faction.OUTSIDERS);
+	  c.setFactions(facts);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -411,6 +420,10 @@ public class SeedData
 	  c.setName("Shinzo Katetsu");
 	  c.setAvatarUrl("/assets/shinzo.png");
 	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.SHINZO);
+	  facts.add(Faction.OUTSIDERS);
+	  c.setFactions(facts);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -508,6 +521,10 @@ public class SeedData
 	  c.setName("Hollyanna Knox");
 	  c.setAvatarUrl("/assets/holly.png");
 	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.HOLLYANNA);
+	  facts.add(Faction.OUTSIDERS);
+	  c.setFactions(facts);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -580,6 +597,10 @@ public class SeedData
 	  c.setName("Geddy Splintwalker");
 	  c.setAvatarUrl("/assets/geddy.png");
 	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.GEDDY);
+	  facts.add(Faction.OUTSIDERS);
+	  c.setFactions(facts);
 	  
 	  c = this.characterService.save(c);
 	  return c;
@@ -649,6 +670,9 @@ public class SeedData
 	  c.setName("Guildmaster Tristane");
 	  c.setAvatarUrl("/assets/tristane.png");
 	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.TRISTANE);
+	  c.setFactions(facts);
 	  
 	  c = this.characterService.save(c);
 	  return c;

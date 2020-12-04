@@ -3,6 +3,7 @@ package org.outsiders.arena.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.h2.util.StringUtils;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Mission;
+import org.outsiders.arena.domain.MissionProgress;
 import org.outsiders.arena.domain.Player;
 import org.outsiders.arena.domain.PlayerCredentials;
 import org.outsiders.arena.domain.PlayerMessage;
@@ -200,6 +202,7 @@ public class PlayerController
 	creds.setPassword(message.getPassword());
 	int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
 	player.setId(randomNum);
+	player.setLevel(1);
 	if (StringUtils.isNullOrEmpty(message.getName())) {
 		message.setName("NPC " + (Math.floor(Math.random() * 1000000)));
 	}
@@ -209,9 +212,22 @@ public class PlayerController
 	player.setDisplayName(message.getName());
 	player.setAvatarUrl(message.getAvatar());
 	player.setCredentials(creds);
-	player.setCharacterIdsUnlocked(Arrays.asList(1, 2, 3, 4, 5));
+	
+	Set<Integer> chars = new HashSet<>();
+	chars.addAll(Arrays.asList(1, 2, 3, 4, 5));
+	player.setCharacterIdsUnlocked(chars);
+	
+	Set<Integer> miss = new HashSet<>();
+	miss.add(0);
+	player.setMissionIdsCompleted(miss);
+	
+	List<MissionProgress> prog = new ArrayList<>();
+	prog.add(new MissionProgress());
+	player.setMissionProgress(prog);
+	
 	player = this.playerService.save(player);
 	LOG.info("Created new Player: " + player.toString());
+	LOG.info(player.getMissionProgress().toString());
 	
 	return player;
 
