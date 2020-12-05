@@ -448,6 +448,8 @@ public class BattleMessageService {
 
             List<String> winningFacts = new ArrayList<>();
             List<String> losingFacts = new ArrayList<>();
+            winningFacts.add("ANYONE");
+            losingFacts.add("ANYONE");
             
             for (CharacterInstance c : winningTeam) {
             	for (Character character : characters) {

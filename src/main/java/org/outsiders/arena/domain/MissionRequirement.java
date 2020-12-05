@@ -15,8 +15,8 @@ public class MissionRequirement {
 	
 	private int missionId;
 	
-	private String userFaction;
-	private String targetFaction;
+	private String userFaction = "ANYONE";
+	private String targetFaction = "ANYONE";
 	
 	@JsonGetter
 	public String getDescription() {

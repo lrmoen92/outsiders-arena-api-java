@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.assertj.core.util.Arrays;
 import org.outsiders.arena.domain.Ability;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Conditional;
@@ -161,12 +160,10 @@ public class SeedData
 	  List<MissionRequirement> requirements = new ArrayList<>();
 	  
 	  MissionRequirement mq1 = new MissionRequirement();
-	  mq1.setMissionId(m.getId());
 	  mq1.setAmount(3);
 	  mq1.setUserFaction(Faction.ALEX);
 	  
 	  MissionRequirement mq2 = new MissionRequirement();
-	  mq2.setMissionId(m.getId());
 	  mq2.setAmount(3);
 	  mq2.setUserFaction(Faction.GEDDY);
 	  
