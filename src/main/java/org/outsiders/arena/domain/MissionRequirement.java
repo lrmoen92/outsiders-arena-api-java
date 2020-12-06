@@ -13,10 +13,18 @@ public class MissionRequirement {
 	
 	private int amount;
 	
-	private int missionId;
-	
 	private String userFaction = "ANYONE";
 	private String targetFaction = "ANYONE";
+	
+    public MissionRequirement() {
+    	
+    }
+    
+    public MissionRequirement(int amount, MissionRequirement parent) {
+    	this.amount = amount;
+    	this.userFaction = parent.getUserFaction();
+    	this.targetFaction = parent.getTargetFaction();
+    }
 	
 	@JsonGetter
 	public String getDescription() {
@@ -69,13 +77,4 @@ public class MissionRequirement {
 	public void setTargetFaction(String targetFaction) {
 		this.targetFaction = targetFaction;
 	}
-
-	public int getMissionId() {
-		return missionId;
-	}
-
-	public void setMissionId(int missionId) {
-		this.missionId = missionId;
-	}
-	
 }

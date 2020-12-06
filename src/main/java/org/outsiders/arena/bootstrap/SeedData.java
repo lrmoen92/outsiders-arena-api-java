@@ -1,10 +1,15 @@
 package org.outsiders.arena.bootstrap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
+import org.h2.util.StringUtils;
 import org.outsiders.arena.domain.Ability;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Conditional;
@@ -12,11 +17,15 @@ import org.outsiders.arena.domain.Cost;
 import org.outsiders.arena.domain.Effect;
 import org.outsiders.arena.domain.Faction;
 import org.outsiders.arena.domain.Mission;
+import org.outsiders.arena.domain.MissionProgress;
 import org.outsiders.arena.domain.MissionRequirement;
+import org.outsiders.arena.domain.Player;
+import org.outsiders.arena.domain.PlayerCredentials;
 import org.outsiders.arena.domain.Quality;
 import org.outsiders.arena.domain.Stat;
 import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.service.MissionService;
+import org.outsiders.arena.service.PlayerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +38,8 @@ public class SeedData
 {
   private static final Logger LOG = LoggerFactory.getLogger(SeedData.class);
   @Autowired
+  private PlayerService playerService;
+  @Autowired
   private CharacterService characterService;
   @Autowired
   private MissionService missionService;
@@ -38,6 +49,7 @@ public class SeedData
   {  
     makeOutsiders();
     makeMissions();
+    makeUsers();
     LOG.info("ALL DATA SEEDED SUCCESSFULLY");
   }
   
@@ -131,6 +143,71 @@ public class SeedData
 	  a.setPosition(l.size());
 	  l.add(a);
 	  return l;
+  }
+  
+  private String makeRed() {
+	    Player player = new Player();
+		PlayerCredentials creds = new PlayerCredentials();
+		creds.setEmail("Red@Red.com");
+		creds.setPassword("red");
+		int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
+		player.setId(randomNum);
+		player.setLevel(1);
+		player.setDisplayName("Red");
+		player.setAvatarUrl("https://i.imgur.com/x8VwSea.png");
+		player.setCredentials(creds);
+		
+		Set<Integer> chars = new HashSet<>();
+		chars.addAll(Arrays.asList(1, 2, 3, 4, 5));
+		player.setCharacterIdsUnlocked(chars);
+		
+		Set<Integer> miss = new HashSet<>();
+		miss.add(0);
+		player.setMissionIdsCompleted(miss);
+		
+		List<MissionProgress> prog = new ArrayList<>();
+		prog.add(new MissionProgress());
+		player.setMissionProgress(prog);
+		
+		player = this.playerService.save(player);
+		LOG.info("Created new Player: " + player.toString());
+		
+		return player.getDisplayName();
+  }
+  
+  private String makeBlue() {
+	    Player player = new Player();
+		PlayerCredentials creds = new PlayerCredentials();
+		creds.setEmail("Blue@Blue.com");
+		creds.setPassword("blue");
+		int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
+		player.setId(randomNum);
+		player.setLevel(1);
+		player.setDisplayName("Blue");
+		player.setAvatarUrl("https://i.imgur.com/d8MKvv0.png");
+		player.setCredentials(creds);
+		
+		Set<Integer> chars = new HashSet<>();
+		chars.addAll(Arrays.asList(1, 2, 3, 4, 5));
+		player.setCharacterIdsUnlocked(chars);
+		
+		Set<Integer> miss = new HashSet<>();
+		miss.add(0);
+		player.setMissionIdsCompleted(miss);
+		
+		List<MissionProgress> prog = new ArrayList<>();
+		prog.add(new MissionProgress());
+		player.setMissionProgress(prog);
+		
+		player = this.playerService.save(player);
+		LOG.info("Created new Player: " + player.toString());
+		
+		return player.getDisplayName();
+  }
+  
+  private void makeUsers() {
+	 LOG.info("Saved new User: " + makeRed().toString());
+	 LOG.info("Saved new User: " + makeBlue().toString());
   }
   
   private void makeOutsiders() {
@@ -285,17 +362,17 @@ public class SeedData
 			  null, null, effects, null, null);
 	  
 	  // EFFECTS 2
-	  List<Effect> effects1 = buildEffects(null, 2,
-			  "Call Lightning", "This unit is taking 15 damage", "/assets/fainne2.png",
+	  List<Effect> effects1 = buildEffects(null, 4,
+			  "Call Lightning", "This unit is taking 5 damage", "/assets/fainne2.png",
 			  false, true, false, true, false, true, false,
-			  buildStat(Stat.DAMAGE, 15), Quality.AFFECTED_BY("Call Lightning"), null);
+			  buildStat(Stat.DAMAGE, 5), Quality.AFFECTED_BY("Call Lightning"), null);
 	  
 	  // ABILITY 2
 	  test = buildAbilities(test,
 			  true, false, false, false,
-			  Cost.twoRan, 0,
+			  Cost.oneRan, 1,
 			  "Call Lightning", "/assets/fainne2.png",
-			  "Fainne summons bolts of lighting from above, dealing 15 damage to one enemy for two turns",
+			  "Fainne summons bolts of lighting from above, dealing 5 damage to one enemy for four turns.",
 			  effects1, null, null, null, null);
 	  
 	  // EFFECTS 3
@@ -355,20 +432,20 @@ public class SeedData
 	  effects = buildEffects(effects, 1, 
 			  "Trident", "Shinzo has dealt magical damage with his trident",  "/assets/shinzo1.png",
 			  false, true, false, false, false, true, false,
-			  buildStat(Stat.DAMAGE, 20), null, null);
+			  buildStat(Stat.DAMAGE, 15), null, null);
 	  
 	  // ABILITY 1
 	  List<Ability> test = buildAbilities(null,
 			  true, false, false, false,
 			  Cost.oneStrOneArc, 2,
 			  "Trident", "/assets/shinzo1.png",
-			  "Shinzo brings the storm with his trident, doing 25 physical damage and 20 magical damage",
+			  "Shinzo brings the storm with his trident, doing 25 physical damage and 15 magical damage",
 			  effects, null, null, null, null);
 	  
 	  // EFFECTS 2
-	  List<Effect> effects1 = buildEffects(null, 2,
+	  List<Effect> effects1 = buildEffects(null, 1,
 			  "Entangle", "This unit is taking 15 damage", "/assets/shinzo2.png",
-			  false, true, false, true, false, true, false,
+			  false, true, false, false, false, true, false,
 			  buildStat(Stat.DAMAGE, 15), null, null);
 	  
 	  effects1 = buildEffects(effects1, 1,
@@ -379,23 +456,23 @@ public class SeedData
 	  // ABILITY 2
 	  test = buildAbilities(test,
 			  true, false, false, false,
-			  Cost.oneDivOneRan, 4,
+			  Cost.oneDiv, 4,
 			  "Entangle", "/assets/shinzo2.png",
-			  "Shinzo entangles an enemy doing 15 damage for two turns, and stunning them for one.",
+			  "Shinzo entangles an enemy doing 15 damage, and stunning them",
 			  effects1, null, null, null, null);
 	  
 	  // EFFECTS 3
-	  List<Effect> effects2 = buildEffects(null, 2,
-			  "Channel Energy", "This unit is healing 10 HP", "/assets/shinzo3.png",
-			  false, true, false, true, false, true, false,
-			  buildStat(Stat.DAMAGE, -10), null, null);
+	  List<Effect> effects2 = buildEffects(null, 1,
+			  "Channel Energy", "This unit is healing 20 HP", "/assets/shinzo3.png",
+			  false, true, false, false, false, true, false,
+			  buildStat(Stat.DAMAGE, -20), null, null);
 	  
 	  // ABILITY 3
 	  test = buildAbilities(test,
 			  false, true, true, true,
-			  Cost.oneDiv, 4,
+			  Cost.oneDivOneRan, 4,
 			  "Channel Energy", "/assets/shinzo3.png",
-			  "Shinzo calls upon his divine power and heals his party for 10 hp for two turns",
+			  "Shinzo calls upon his divine power and heals his party for 20 hp",
 			  null, null, null, null, effects2);
 	  
 	  // EFFECTS 4
@@ -674,4 +751,39 @@ public class SeedData
 	  c = this.characterService.save(c);
 	  return c;
   }
+  
+//  Drundar 
+//
+//  CD: 1 - Hammer Down - Piercing damage
+//  CD: 4 - Build Up - put shields or armor on self
+//  CD: 4 - Quake - aoe dmg, and shield destruction
+//  CD: 4 - Call The Guard - Go invulnerable for one turn
+//
+//  Kalio 
+//
+//  CD: 1 - Mage Armor - Give ally or self armor and reflect damage
+//  CD: 4 - Dispel - remove magical effects
+//  CD: 4 - Research - reroll energy hanatarou style
+//  CD: 4 - A+ - Go invulnerable for one turn
+//
+//  Ralion 
+//
+//  CD: 1 - Extort - increase enemy costs
+//  CD: 4 - Lightning Bolt - hard dmg
+//  CD: 4 - Arrogant Generosity - heal enemy for 10 hp, lower enemy damage, or/and stun skills
+//  CD: 4 - Ultimatum - Go invulnerable for one turn
+//
+//  Imperia 
+//
+//  CD: 1 - Sneaky Jump - Counter skills used on her
+//  CD: 4 - Stunning Fist - stun and dmg, if sneak jump succeeded then bonus
+//  CD: 4 - Flurry of Blows - dot, if sneak jump succeeded then bonus
+//  CD: 4 - 1 Random - Go invulnerable for one turn
+//
+//  Millor 
+//
+//  CD: 1 - Hold Hostage - Stun an enemy's physical skills and put shields on self
+//  CD: 4 - Ice Trap - put counter on enemy, do damage to them and counter if they use a damaging skill
+//  CD: 4 - Mutilate - dmg and increase costs on one unit
+//  CD: 4 - 1 Random - Go invulnerable for one turn
 }

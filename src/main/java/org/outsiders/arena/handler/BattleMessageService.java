@@ -443,7 +443,10 @@ public class BattleMessageService {
         
         // TODO: CHECK MISSIONS HERE
         boolean missionProgress = false;
+        boolean newMissionProgress = false;
+    	StringBuilder missionString = new StringBuilder();
         boolean characterUnlocked = false; 
+    	StringBuilder characterString = new StringBuilder();
         if (!queue.equals("PRIVATE")) {
 
             List<String> winningFacts = new ArrayList<>();
@@ -476,41 +479,60 @@ public class BattleMessageService {
             for (MissionProgress mp : winner.getMissionProgress()) {
 				boolean finished = true;
 				boolean characterUnlock = false;
-            	currentMissions.add(mp.getMissionId());
             	Mission target = null;
+				currentMissions.add(mp.getMissionId());
             	for (MissionRequirement req : mp.getRequirements()) {
+            		boolean reqFinished = true;
             		for (Mission mis : missions) {
     					if (mp.getMissionId() == mis.getId()) {
-    						currentMissions.add(mp.getMissionId());
     						target = mis;
     					}
             		}
     				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {
-    					missionProgress = true;
     					int old = req.getAmount();
     					int cur = old + 1;
     					int idUnlock = target.getCharacterIdUnlocked();
     					characterUnlock = idUnlock > 0;
     					for (MissionRequirement tar : target.getRequirements()) {
-    						if (!(cur > tar.getAmount())) {
-    							req.setAmount(cur);
-    						}
-    						if (cur != tar.getAmount()) {
-    							finished = false;
+    						if (req.getTargetFaction().equals(tar.getTargetFaction()) && req.getUserFaction().equals(tar.getUserFaction())) {
+        						if (cur != tar.getAmount()) {
+        							reqFinished = false;
+        						}
+        						if (!(cur > tar.getAmount())) {
+                					missionProgress = true;
+                					missionString.append("Won a game with " + req.getUserFaction().toLowerCase() + " vs. " + req.getTargetFaction().toLowerCase() + " for mission : " + target.getName() + "\\r\\n");
+                					req.setAmount(cur);
+        						}
     						}
     					}
     				} else {
-    					finished = false;
-    				}
-    				
-    				if (finished) {
-    					missionsToMarkDone.add(mp.getMissionId());
-    					if (characterUnlock) {
-    						characterUnlocked = true;
-    						winner.getCharacterIdsUnlocked().add(target.getCharacterIdUnlocked());
+    					for (MissionRequirement tar : target.getRequirements()) {
+	    					if (req.getTargetFaction().equals(tar.getTargetFaction()) && req.getUserFaction().equals(tar.getUserFaction())) {
+	    						if (req.getAmount() == tar.getAmount()) {
+	    							reqFinished = true;
+	    						} else {
+	    	    					reqFinished = false;
+	    						}
+	    					}
     					}
     				}
+    				if (!reqFinished) {
+    					finished = false;
+    				}
             	}
+				
+				if (finished) {
+					missionsToMarkDone.add(mp.getMissionId());
+					if (characterUnlock) {
+						characterUnlocked = true;
+						winner.getCharacterIdsUnlocked().add(target.getCharacterIdUnlocked());
+    					characterString.append("Character ID: " + target.getCharacterIdUnlocked() + "\\r\\n");
+					} else {
+						if (missionProgress) {
+							// i dont think do anything
+						}
+					}
+				}
             }
             
             for (Integer i : missionsToMarkDone) {
@@ -525,84 +547,119 @@ public class BattleMessageService {
             
             // check undone missions
             for (Mission m : missions) {
-				boolean finished = true;
-				boolean characterUnlock = false;
+				boolean finished = false;
+				boolean newCharacterUnlock = false;
+	            List<MissionRequirement> missionReqProgressHolder = new ArrayList<>();
+				// i haven't done it yet, and i'm not currently working on it
             	if (!winner.getMissionIdsCompleted().contains(m.getId()) && !currentMissions.contains(m.getId())) {
-                	List<MissionRequirement> reqs = m.getRequirements();
+            		
+            		// i'm the right level to do it
                 	if (m.getMinmumLevel() < winner.getLevel()) {
+                		
+                		// if there's a prereq
                 		if (m.getPrerequisiteMissionId() > 0) {
+                			// I better have done it
                     		if (winner.getMissionIdsCompleted().contains(m.getPrerequisiteMissionId())){
-                    			for (MissionRequirement req : m.getRequirements()) {
-                    				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {
-                    					missionProgress = true;
-                    					int old = req.getAmount();
+                    			
+                    			
+                    			for (MissionRequirement req : m.getRequirements()) {            		
+                    				boolean reqFinished = true;
+                    				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {       		
+                    					int old = 0;
                     					int cur = old + 1;
                     					int idUnlock = m.getCharacterIdUnlocked();
-                    					characterUnlock = idUnlock > 0;
-                    					for (MissionRequirement tar : m.getRequirements()) {
-                    						if (!(cur > tar.getAmount())) {
-                    							req.setAmount(cur);
-                    						}
-                    						if (cur != tar.getAmount()) {
-                    							finished = false;
-                    						}
-                    					}
+                    					newCharacterUnlock = idUnlock > 0;
+                    					
+                						if (cur != req.getAmount()) {
+                							reqFinished = false;
+                						}
+                    					// build mission progress object
+                						if (!(cur > req.getAmount())) {
+                        					newMissionProgress = true;
+                        					missionString.append("Won a game with " + req.getUserFaction().toLowerCase() + " vs. " + req.getTargetFaction().toLowerCase() + " for mission : " + m.getName() + "\\r\\n");
+                						}
+                    					MissionRequirement newReq = new MissionRequirement(cur, req);
+                    					missionReqProgressHolder.add(newReq);
                     				} else {
+                    					MissionRequirement newReq = new MissionRequirement(0, req);
+                    					missionReqProgressHolder.add(newReq);
+                    					reqFinished = false;
+                    				}
+                    				if (!reqFinished) {
                     					finished = false;
                     				}
-                    				
-                    				if (finished) {
-                    					missionsToMarkDone.add(m.getId());
-                    					if (characterUnlock) {
-                    						characterUnlocked = true;
-                    						winner.getCharacterIdsUnlocked().add(m.getCharacterIdUnlocked());
-                    					}
-                    				}
                     			}
+                    			
+                    			
                     		}
+                    		// no prerequisite
                 		} else {
+                			
+                			
                 			for (MissionRequirement req : m.getRequirements()) {
+                				boolean reqFinished = true;
                 				if (winningFacts.contains(req.getUserFaction()) && losingFacts.contains(req.getTargetFaction())) {
-                					missionProgress = true;
-                					int old = req.getAmount();
+                					int old = 0;
                 					int cur = old + 1;
                 					int idUnlock = m.getCharacterIdUnlocked();
-                					characterUnlock = idUnlock > 0;
-                					for (MissionRequirement tar : m.getRequirements()) {
-                						if (!(cur > tar.getAmount())) {
-                							req.setAmount(cur);
-                						}
-                						if (cur != tar.getAmount()) {
-                							finished = false;
-                						}
-                					}
+                					newCharacterUnlock = idUnlock > 0;
+                					
+            						if (cur != req.getAmount()) {
+            							reqFinished = false;
+            						}
+                					// build mission progress object
+            						if (!(cur > req.getAmount())) {
+                    					newMissionProgress = true;
+                    					missionString.append("Won a game with " + req.getUserFaction().toLowerCase() + " vs. " + req.getTargetFaction().toLowerCase() + " for mission : " + m.getName() + "\\r\\n");
+            						}
+                					MissionRequirement newReq = new MissionRequirement(cur, req);
+                					missionReqProgressHolder.add(newReq);
                 				} else {
-                					finished = false;
+                					MissionRequirement newReq = new MissionRequirement(0, req);
+                					missionReqProgressHolder.add(newReq);
+                					reqFinished = false;
                 				}
-                				
-                				if (finished) {
-                					missionsToMarkDone.add(m.getId());
-                					if (characterUnlock) {
-                						characterUnlocked = true;
-                						winner.getCharacterIdsUnlocked().add(m.getCharacterIdUnlocked());
-                					}
+                				if (!reqFinished) {
+                					finished = false;
                 				}
                 			}
                 		}
+                		
                 	}
+                	
             	}
+            	
+				
+				if (finished) {
+					missionsToMarkDone.add(m.getId());
+					if (newCharacterUnlock) {
+						characterUnlocked = true;
+						winner.getCharacterIdsUnlocked().add(m.getCharacterIdUnlocked());
+    					characterString.append("Character ID: " + m.getCharacterIdUnlocked() + "\\r\\n");
+					}
+				} else {
+					if (newMissionProgress) {
+						MissionProgress prog = new MissionProgress(m, missionReqProgressHolder);
+						List<MissionProgress> oldProg = winner.getMissionProgress();
+						oldProg.add(prog);
+					}
+				}
             }
             
             for (Integer i : missionsToMarkDone) {
             	winner.getMissionIdsCompleted().add(i);
+            	
+            	winner.getMissionProgress().removeIf((x) -> {
+            		return x.getMissionId() == i;
+            	});
             }
             
             missionsToMarkDone.clear();
             
         }
         
-        this.playerService.save(loser);
-        this.playerService.save(winner);
+        Player newLoser = this.playerService.save(loser);
+        Player newWinner = this.playerService.save(winner);
         
         String winnerString;
         String loserString;
@@ -610,24 +667,22 @@ public class BattleMessageService {
         StringBuilder sbw = new StringBuilder();
         StringBuilder sbl = new StringBuilder();
         
-        sbw.append("CONGRATULATIONS!  You've won a " + queue.toLowerCase() + " battle against " + loser.getDisplayName() + ". You've gained " + xpGain + " experience" + (lvGain ? "\", and ranked up!\"" : "!"));
-        sbl.append("BETTER LUCK NEXT TIME!  You've lost a " + queue.toLowerCase() + " battle against " + winner.getDisplayName() + ". You've lost " + xpLost + " experience" + (lvLost ? "\", and demoted...\"" : "!"));
+        sbw.append("CONGRATULATIONS!  You've won a " + queue.toLowerCase() + " battle against " + loser.getDisplayName() + ". You've gained " + xpGain + " experience" + (lvGain ? ", and ranked up!" : "!"));
+        sbl.append("BETTER LUCK NEXT TIME!  You've lost a " + queue.toLowerCase() + " battle against " + winner.getDisplayName() + ". You've lost " + xpLost + " experience" + (lvLost ? ", and demoted..." : "!"));
         
-        if(missionProgress) {
-        	String missionString = "";
-        	
+        if(missionProgress || newMissionProgress) {
+			
         	// TODO CHECK MISSION PROGRESS
         	
-            sbw.append("RETURN-CARRIAGE");
-            sbw.append("Progress made on the following missions: " + missionString);
+//            sbw.append("\\r\\n");
+            sbw.append("Progress made on the following missions: " + missionString.toString());
         }
         
         if(characterUnlocked) {
-        	String characterString = "";
         	
         	// TODO CHECK CHARACTER PROGRESS
-            sbw.append("RETURN-CARRIAGE");
-            sbw.append("New Character Unlocked!  " + characterString);
+//            sbw.append("\\r\\n");
+            sbw.append("New Character Unlocked!  " + characterString.toString());
         }
         
         winnerString = "\"" + sbw.toString() + "\"";
@@ -635,7 +690,7 @@ public class BattleMessageService {
         
         // TODO: can verify here playerOneVictory(), or two, depending on the ids
         
-        String responseJson = "{\"type\": \"GAME_END\", \"playerOneWon\": " + playerOneWon + ", \"winnerString\": " + winnerString + ", \"loserString\": " + loserString + "}";
+        String responseJson = "{\"type\": \"GAME_END\", \"winner\": " +  new Gson().toJson(newWinner)  + ", \"loser\": " +  new Gson().toJson(newLoser) + ", \"winnerString\": " + winnerString + ", \"loserString\": " + loserString + "}";
         LOG.info(responseJson.toString());
         return responseJson;
     }
@@ -653,6 +708,7 @@ public class BattleMessageService {
         
         List<List<String>> allAbilitiesCosts = dto.getAllyCosts();
         List<AbilityTargetDTO> chosenAbilities = dto.getChosenAbilities();
+        List<String> spentEnergyList = dto.getSpentEnergy();
 
         // backend should know proper energy, just update the battle and save after each call.
         
@@ -673,34 +729,25 @@ public class BattleMessageService {
         	currentEnergy = b.getPlayerTwoEnergy();
         	characterUnits = characters.subList(3, 6);
         }
-        currentEnergy.put(Energy.RANDOM, 0);
-        spentEnergy.put(Energy.RANDOM, 0);
+
+		currentEnergy.put(Energy.RANDOM, 0);
+		spentEnergy.put(Energy.RANDOM, 0);
 		spentEnergy.put(Energy.STRENGTH, 0);
 		spentEnergy.put(Energy.DEXTERITY, 0);
 		spentEnergy.put(Energy.ARCANA, 0);
 		spentEnergy.put(Energy.DIVINITY, 0);
+        for (String s : spentEnergyList) {
+        	int old = spentEnergy.get(s);
+        	spentEnergy.put(s, old + 1);
+        }
         Integer[] charPos = {0, 1, 2};
                 
         if (chosenAbilities != null) {
 	        for (AbilityTargetDTO abilityTargetDto : chosenAbilities) {
 	        	Ability ability = abilityTargetDto.getAbility();
 	        	
-	        	// this just sets up charPos for later
+	        	// this sets character to unusable
 	        	charPos[abilityTargetDto.getCharacterPosition()] = -1;
-	        	for (String string : ability.getCost()) {
-	        		if (string.equals(Energy.RANDOM)) {
-	        			// TODO: FIX THIS FOR COLOR COSTS CHECKS TO WORK RIGHT
-        				spentEnergy.put(Energy.RANDOM, spentEnergy.get(Energy.RANDOM) + 1);
-	        		} else if (string.equals(Energy.STRENGTH)) {
-        				spentEnergy.put(Energy.STRENGTH, spentEnergy.get(Energy.STRENGTH) + 1);
-	        		} else if (string.equals(Energy.DEXTERITY)) {
-        				spentEnergy.put(Energy.DEXTERITY, spentEnergy.get(Energy.DEXTERITY) + 1);
-	        		} else if (string.equals(Energy.ARCANA)) {
-        				spentEnergy.put(Energy.ARCANA, spentEnergy.get(Energy.ARCANA) + 1);
-	        		} else if (string.equals(Energy.DIVINITY)) {
-        				spentEnergy.put(Energy.DIVINITY, spentEnergy.get(Energy.DIVINITY) + 1);
-	        		}
-	        	}
 	        }
         }
 

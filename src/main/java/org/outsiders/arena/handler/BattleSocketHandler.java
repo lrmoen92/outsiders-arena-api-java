@@ -1,5 +1,6 @@
 package org.outsiders.arena.handler;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -46,8 +47,10 @@ extends SocketHandler {
         	if (session.getUri().equals(s.getUri()) && !session.equals(s)) {
         		if (m.get("type").toString().equals("MATCH_MAKING") || m.get("type").toString().equals("TURN_END") || m.get("type").toString().equals("CHAT") || m.get("type").toString().equals("GAME_END")) {
         			LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " MATCHED AND SENT TO " + s.getRemoteAddress().toString() + " ON ARENA : " + s.getUri().toString());
-    		    	session.sendMessage(msg);
-            		s.sendMessage(msg);
+//        			while (!session.isOpen()) {
+//        				Thread.sleep(500);
+//        			}
+        			trySend(s, msg);
             		twoPlayersMessage = true;
         		}
         	} 
@@ -56,6 +59,17 @@ extends SocketHandler {
         	LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " AND ARENA : " + session.getUri().toString());
         	session.sendMessage(msg);
         }
+    }
+    
+    public void trySend(WebSocketSession s, WebSocketMessage msg) throws IOException, InterruptedException {
+		try {
+	    	session.sendMessage(msg);
+    		s.sendMessage(msg);
+		} catch (IllegalStateException e) {
+			LOG.info(e.getMessage());
+			Thread.sleep(2000);
+			this.trySend(s,  msg);
+		}
     }
 
     public String processMapEntry(Map valueMap) throws Exception {

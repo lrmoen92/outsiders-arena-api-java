@@ -6,6 +6,9 @@ public class CostCheckDTO {
 	
 	private List<AbilityTargetDTO> chosenAbilities;
 	private List<List<String>> allyCosts;
+	private List<String> spentEnergy;
+	
+	
 	
 	public List<AbilityTargetDTO> getChosenAbilities() {
 		return chosenAbilities;
@@ -18,6 +21,12 @@ public class CostCheckDTO {
 	}
 	public void setAllyCosts(List<List<String>> allyCosts) {
 		this.allyCosts = allyCosts;
+	}
+	public List<String> getSpentEnergy() {
+		return spentEnergy;
+	}
+	public void setSpentEnergy(List<String> spentEnergy) {
+		this.spentEnergy = spentEnergy;
 	}
 	
 
