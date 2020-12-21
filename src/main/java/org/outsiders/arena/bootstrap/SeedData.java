@@ -158,7 +158,7 @@ public class SeedData
 		player.setCredentials(creds);
 		
 		Set<Integer> chars = new HashSet<>();
-		chars.addAll(Arrays.asList(1, 2, 3, 4, 5));
+		chars.addAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7));
 		player.setCharacterIdsUnlocked(chars);
 		
 		Set<Integer> miss = new HashSet<>();
@@ -188,7 +188,7 @@ public class SeedData
 		player.setCredentials(creds);
 		
 		Set<Integer> chars = new HashSet<>();
-		chars.addAll(Arrays.asList(1, 2, 3, 4, 5));
+		chars.addAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7));
 		player.setCharacterIdsUnlocked(chars);
 		
 		Set<Integer> miss = new HashSet<>();
@@ -217,11 +217,51 @@ public class SeedData
 	 LOG.info("Saved new Character: " + makeHollyanna().toString());
 	 LOG.info("Saved new Character: " + makeGeddy().toString());
 	 LOG.info("Saved new Character: " + makeTristane().toString());
+	 LOG.info("Saved new Character: " + makeDrundar().toString());
   }
 
   
   private void makeMissions() {
 	 LOG.info("Saved new Mission: " + makeTristaneMission().toString());
+	 LOG.info("Saved new Mission: " + makeDrundarMission().toString());
+  }
+  
+  private Mission makeDrundarMission() {
+	  Mission m = new Mission();
+	  
+	  m.setId(2);
+	  m.setAvatarUrl("/assets/drundar.png");
+	  m.setCharacterIdUnlocked(7);
+	  m.setDescription("Drundar is tearing down the place, no choice but to fight!");
+	  m.setMinmumLevel(6);
+	  m.setName("Walls Come Tumbling Down");
+	  
+	  List<MissionRequirement> requirements = new ArrayList<>();
+	  
+	  MissionRequirement mq1 = new MissionRequirement();
+	  mq1.setAmount(3);
+	  mq1.setUserFaction(Faction.TRISTANE);
+	  
+	  MissionRequirement mq2 = new MissionRequirement();
+	  mq2.setAmount(3);
+	  mq2.setUserFaction(Faction.GEDDY);
+	  
+	  MissionRequirement mq3 = new MissionRequirement();
+	  mq3.setAmount(3);
+	  mq3.setUserFaction(Faction.ALEX);
+	  
+	  MissionRequirement mq4 = new MissionRequirement();
+	  mq4.setAmount(3);
+	  mq4.setUserFaction(Faction.SHINZO);
+	  
+	  requirements.add(mq1);
+	  requirements.add(mq2);
+	  requirements.add(mq3);
+	  requirements.add(mq4);
+	  
+	  m.setRequirements(requirements);
+	  
+	  return this.missionService.save(m);
   }
   
   private Mission makeTristaneMission() {
@@ -607,7 +647,7 @@ public class SeedData
   private Character makeGeddy() {
 	  // EFFECTS 1
 	  List<Effect> effects = buildEffects(null, 1, 
-			  "Darts", "This unit took damage from darts", "/assets/holly4.png", 
+			  "Darts", "This unit took damage from darts", "/assets/geddy1.png", 
 			  true, false, false, false, false, true, false,
 			  buildStat(Stat.DAMAGE, 15), null, null);
 	  
@@ -751,13 +791,90 @@ public class SeedData
 	  c = this.characterService.save(c);
 	  return c;
   }
+
   
-//  Drundar 
+//Drundar 
 //
-//  CD: 1 - Hammer Down - Piercing damage
-//  CD: 4 - Build Up - put shields or armor on self
-//  CD: 4 - Quake - aoe dmg, and shield destruction
-//  CD: 4 - Call The Guard - Go invulnerable for one turn
+//CD: 1 - Hammer Down - Piercing damage
+//CD: 4 - Build Up - put shields or armor on self
+//CD: 4 - Quake - aoe dmg, and shield destruction
+//CD: 4 - Call The Guard - Go invulnerable for one turn
+  private Character makeDrundar() {
+	  // phys / mag / affl / inter / cond / vis / stack
+	  // EFFECTS 1
+	  List<Effect> effects = buildEffects(null, 1, 
+			  "Hammer Down", "This unit took damage from hammer down", "/assets/drundar1.png", 
+			  true, false, false, false, false, true, false,
+			  buildStat(Stat.PIERCING_DAMAGE, 35), null, null);
+	  
+	  // ABILITY 1
+	  List<Ability> test = buildAbilities(null,
+			  true, false, false, false,
+			  Cost.oneStrOneRan, 1,
+			  "Hammer Down", "/assets/drundar1.png",
+			  "Drundar uses his magical hammer to deal 35 piercing damage.",
+			  effects, null, null, null, null);
+	  
+	  // EFFECTS 2
+	  List<Effect> effects1 = buildEffects(null, 3,
+			  "Manor Security", "Drundar has 50% armor.", "/assets/drundar2.png",
+			  true, false, false, false, false, true, false,
+			  buildStat(Stat.ARMOR, 50), null, null);
+	  
+	  // ABILITY 2
+	  test = buildAbilities(test,
+			  false, false, true, false,
+			  Cost.oneRan, 1,
+			  "Manor Security", "/assets/drundar2.png",
+			  "Drundar beefs up on security, taking 50% less physical damage for 3 turns",
+			  null, effects1, null, null, null);
+	  
+	  
+	  // EFFECTS 3
+	  List<Effect> effects2 = buildEffects(null, 1,
+			  "Quake", "This unit has taken damage and lost all shields from quake.", "/assets/drundar3.png",
+			  false, true, false, false, false, true, false,
+			  buildStat(Stat.SHIELD_GAIN, -9999), null, null);
+	  
+	  effects2 = buildEffects(effects2, 1,
+			  "Quake", "This unit has taken damage and lost all shields from quake.", "/assets/drundar3.png",
+			  false, true, false, false, false, true, false,
+			  buildStat(Stat.DAMAGE, 20), null, null);
+	  
+	  // ABILITY 3
+	  test = buildAbilities(test,
+			  true, false, false, true,
+			  Cost.oneStrOneArc, 4,
+			  "Quake", "/assets/drundar3.png",
+			  "Drundar creates a magical quake, destroying all enemy shields and doing 20 damage to all enemies.",
+			  null, null, null, effects2, null);
+	  
+	  // EFFECTS 4
+	  List<Effect> effects3 = buildEffects(null, 1,
+			  "Brotherly Bond", "This unit is invulnerable.", "/assets/drundar4.png",
+			  true, false, false, false, false, true, false,
+			  null, Quality.INVULNERABLE, null);
+	  
+	  // ABILITY 4
+	  test = buildAbilities(test,
+			  false, false, true, false,
+			  Cost.oneRan, 4,
+			  "Brotherly Bond", "/assets/drundar4.png",
+			  "Drundar goes invulnerable.",
+			  null, effects3, null, null, null);	  
+	  
+	  Character c = new Character();
+	  c.setId(7);
+	  c.setName("Drundar Earthbreaker");
+	  c.setAvatarUrl("/assets/drundar.png");
+	  c.setAbilities(test);
+	  List<String> facts = new ArrayList<>();
+	  facts.add(Faction.DRUNDAR);
+	  c.setFactions(facts);
+	  
+	  c = this.characterService.save(c);
+	  return c;
+  }
 //
 //  Kalio 
 //

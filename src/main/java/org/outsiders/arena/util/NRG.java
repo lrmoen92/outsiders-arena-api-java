@@ -638,6 +638,7 @@ public class NRG
 	  boolean isMagStunned = false;
 	  
 	  boolean isShieldGain = false;
+	  boolean isShieldLoss = false;
 	  boolean isAffliction = false;
 	  boolean shieldsApplied = false;
 	  boolean targetInvulnerable = false;
@@ -806,6 +807,7 @@ public class NRG
 			  isHeal = isDamage ? effect.getStatMods().get(Stat.DAMAGE) < 0 : false;
 			  isShield = effect.getStatMods().get(Stat.SHIELDS) != null;
 			  isShieldGain = effect.getStatMods().get(Stat.SHIELD_GAIN) != null;
+			  isShieldLoss = isShieldGain ? effect.getStatMods().get(Stat.SHIELD_GAIN) < 0 : false;
 			  isAffliction = effect.isAffliction();
 			  isRandomChange = effect.getStatMods().get(Stat.ENERGY_CHANGE) != null;
 			  isStrengthChange = effect.getStatMods().get(Stat.STRENGTH_CHANGE) != null;
@@ -895,46 +897,54 @@ public class NRG
 					  }
 				  } 
 			  }
-			  if (isDmg || isHeal) {
+			  if (isDmg || isHeal || isShieldLoss) {
 				  Integer finalDamage = 0;
-				  if (effect.getStatMods().get(Stat.DAMAGE) != null) {
-					  if (hasMods && !isHeal) {
-						  int dmg = effect.getStatMods().get(Stat.DAMAGE);
-						  int flatDmg = dmg + totalIn;
-						  if (flatDmg > 0) {
-							  finalDamage = Math.round(flatDmg * ((100 - totalAr) / 100));	  
+				  if (isDmg || isHeal) {
+					  if (effect.getStatMods().get(Stat.DAMAGE) != null) {
+						  if (hasMods && !isHeal) {
+							  int dmg = effect.getStatMods().get(Stat.DAMAGE);
+							  int flatDmg = dmg + totalIn;
+							  if (flatDmg > 0) {
+								  finalDamage = Math.round(flatDmg * ((100 - totalAr) / 100));	  
+							  }
+						  } else {
+							  finalDamage = effect.getStatMods().get(Stat.DAMAGE);
 						  }
-					  } else {
-						  finalDamage = effect.getStatMods().get(Stat.DAMAGE);
 					  }
-				  }
-				  if (effect.getStatMods().get(Stat.BONUS_DAMAGE) != null) {
-					  if (hasMods) {
-						  int dmg = effect.getStatMods().get(Stat.BONUS_DAMAGE);
-						  finalDamage = Math.round(dmg * ((100 - totalAr) / 100));
-					  } else {
-						  finalDamage = finalDamage + effect.getStatMods().get(Stat.BONUS_DAMAGE);
-					  }
-				  }
-				  if (effect.getStatMods().get(Stat.PIERCING_DAMAGE) != null) {
-					  if (hasMods) {
-						  int dmg = effect.getStatMods().get(Stat.PIERCING_DAMAGE);
-						  int flatDmg = dmg + totalIn;
-						  if (flatDmg > 0) {
-							  finalDamage = finalDamage + flatDmg;
+					  if (effect.getStatMods().get(Stat.BONUS_DAMAGE) != null) {
+						  if (hasMods) {
+							  int dmg = effect.getStatMods().get(Stat.BONUS_DAMAGE);
+							  finalDamage = Math.round(dmg * ((100 - totalAr) / 100));
+						  } else {
+							  finalDamage = finalDamage + effect.getStatMods().get(Stat.BONUS_DAMAGE);
 						  }
-					  } else {
-						  finalDamage = finalDamage + effect.getStatMods().get(Stat.PIERCING_DAMAGE);
+					  }
+					  if (effect.getStatMods().get(Stat.PIERCING_DAMAGE) != null) {
+						  if (hasMods) {
+							  int dmg = effect.getStatMods().get(Stat.PIERCING_DAMAGE);
+							  int flatDmg = dmg + totalIn;
+							  if (flatDmg > 0) {
+								  finalDamage = finalDamage + flatDmg;
+							  }
+						  } else {
+							  finalDamage = finalDamage + effect.getStatMods().get(Stat.PIERCING_DAMAGE);
+						  }
 					  }
 				  }
 				  
 				  // remove appropriate amount of shields
 				  // if heal, or target is invuln, dont mess with shields
+				  int destruct = isShield ? effect.getStatMods().get(Stat.SHIELDS) : 0;
 				  if (!isHeal && isDamagable && !isAffliction) {
 					  for (BattleEffect ef : currentTargetEffects) {
 						  if (ef.getStatMods() != null) {
 							  if (ef.getStatMods().get(Stat.SHIELDS) != null) {
 								  shields = ef.getStatMods().get(Stat.SHIELDS);
+								  if (destruct >= shields) {
+									  destruct = destruct - shields;
+								  } else {
+									  ef.getStatMods().put(Stat.SHIELDS, shields - destruct);
+								  }
 								  if (finalDamage > 0) {
 									  finalDamage = finalDamage - shields;
 									  if (finalDamage < 0) {
@@ -1031,6 +1041,8 @@ public class NRG
 			  // adjust stats accordingly, check for resists, magical physical, here from "current"
 			  // check for existence of Stat.DAMAGE, Stat.PIERCING_DAMAGE, and Stat.TRUE_DAMAGE
 			  // else 
+			  
+			  // TODO: Check here for Drundar
 			  if (!shieldsApplied && isShieldGain) {
 				  gainAmt = effect.getStatMods().get(Stat.SHIELD_GAIN);
 				  BattleEffect shieldEffect = new BattleEffect(effect);

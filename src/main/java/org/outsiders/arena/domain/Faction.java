@@ -11,6 +11,7 @@ public class Faction {
 	  public static final String FAINNE = "FAINNE";
 	  public static final String HOLLYANNA = "HOLLYANNA";
 	  public static final String TRISTANE = "TRISTANE";
+	  public static final String DRUNDAR = "DRUNDAR";
 	  
 
 	  public static final String OUTSIDERS = "OUTSIDERS";
