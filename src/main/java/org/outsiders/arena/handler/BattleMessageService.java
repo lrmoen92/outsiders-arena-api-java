@@ -69,6 +69,7 @@ public class BattleMessageService {
         if (battle == null) {
 	        battle = new Battle();
 	        battle.setId(this.nrg.randomInt());
+	        battle.setStatus("QUEUEING");
 	        battle.setQueue(queue);
 	        battle.setArenaId(arenaId);
 	        battle.setPlayerIdOne(playerId.intValue());
@@ -91,6 +92,7 @@ public class BattleMessageService {
 	        LOG.info("SAVED BATTLE:: " + savedBattle.toString());
 	        return new Gson().toJson("WAITING FOR OPPONENTS");
         } else {
+	        battle.setStatus("MATCHING");
 	        ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
             CharacterInstance i1 = new CharacterInstance();
             CharacterInstance i2 = new CharacterInstance();
@@ -116,6 +118,8 @@ public class BattleMessageService {
             }
 
             savedBattle = this.battleService.save(battle);
+
+	        battle.setStatus("STARTING");
             List<Character> characters = characterService.getCharactersForBattle(savedBattle);
 
             
@@ -293,7 +297,9 @@ public class BattleMessageService {
         }
         
 
+        bPost.setStatus("PLAYING");
         bPost = battleService.save(bPost);
+        
         LOG.info(bPost.toString());
         String responseJson = "{\"type\": \"END\", \"isPlayerOne\": " + isPlayerOne + ", \"battle\": " + new Gson().toJson(bPost) + "}";
         return responseJson;

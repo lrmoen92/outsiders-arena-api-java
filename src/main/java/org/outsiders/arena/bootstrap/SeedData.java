@@ -150,7 +150,7 @@ public class SeedData
 		PlayerCredentials creds = new PlayerCredentials();
 		creds.setEmail("Red@Red.com");
 		creds.setPassword("red");
-		int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
+		int randomNum = -19024288;
 		player.setId(randomNum);
 		player.setLevel(1);
 		player.setDisplayName("Red");
@@ -180,7 +180,7 @@ public class SeedData
 		PlayerCredentials creds = new PlayerCredentials();
 		creds.setEmail("Blue@Blue.com");
 		creds.setPassword("blue");
-		int randomNum = ThreadLocalRandom.current().nextInt(0, 100000000);
+		int randomNum = -19024287;
 		player.setId(randomNum);
 		player.setLevel(1);
 		player.setDisplayName("Blue");
@@ -558,7 +558,7 @@ public class SeedData
 	  // ABILITY 1
 	  List<Ability> test = buildAbilities(null,
 			  true, false, false, false,
-			  Cost.oneRan, 3,
+			  Cost.oneRan, 2,
 			  "Sneak Attack", "/assets/holly1.png",
 			  "Hollyanna hides in the shadows, and then strikes, dealing 25 damage.",
 			  effects, null, null, null, null);
@@ -819,7 +819,7 @@ public class SeedData
 	  List<Effect> effects1 = buildEffects(null, 3,
 			  "Manor Security", "Drundar has 50% armor.", "/assets/drundar2.png",
 			  true, false, false, false, false, true, false,
-			  buildStat(Stat.ARMOR, 50), null, null);
+			  buildStat(Stat.PHYSICAL_ARMOR, 50), null, null);
 	  
 	  // ABILITY 2
 	  test = buildAbilities(test,

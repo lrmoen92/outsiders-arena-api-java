@@ -10,12 +10,15 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.h2.util.StringUtils;
+import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Mission;
 import org.outsiders.arena.domain.MissionProgress;
+import org.outsiders.arena.domain.OrphanMessage;
 import org.outsiders.arena.domain.Player;
 import org.outsiders.arena.domain.PlayerCredentials;
 import org.outsiders.arena.domain.PlayerMessage;
+import org.outsiders.arena.service.BattleService;
 import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.service.MissionService;
 import org.outsiders.arena.service.PlayerService;
@@ -45,6 +48,9 @@ public class PlayerController
   
   @Autowired
   private MissionService missionService;
+  
+  @Autowired
+  private BattleService battleService;
   
   
   // player id - arena id
@@ -192,6 +198,7 @@ public class PlayerController
 	  }	
 	  return output;
   }
+  
   
   @RequestMapping(value={"/api/player/signup/"}, method=RequestMethod.POST)
   public Player createPlayer(@RequestBody PlayerMessage message)

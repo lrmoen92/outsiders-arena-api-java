@@ -9,8 +9,14 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 public class CassandraConfig
   extends AbstractCassandraConfiguration
 {
+	@Override
   protected String getKeyspaceName()
   {
     return "outsiders_arena";
   }
+  
+	@Override
+	protected String getContactPoints() {
+		return "192.168.0.69";
+	}
 }

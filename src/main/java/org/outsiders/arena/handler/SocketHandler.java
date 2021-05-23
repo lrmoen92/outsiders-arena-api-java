@@ -12,7 +12,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class SocketHandler
   extends TextWebSocketHandler
 {
-  List<WebSocketSession> sessions = new CopyOnWriteArrayList();
+  List<WebSocketSession> sessions = new CopyOnWriteArrayList<WebSocketSession>();
   
   public void afterConnectionEstablished(WebSocketSession session)
     throws Exception

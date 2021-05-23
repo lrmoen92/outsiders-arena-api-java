@@ -637,6 +637,7 @@ public class NRG
 	  boolean isPhysStunned = false;
 	  boolean isMagStunned = false;
 	  
+	  boolean isShieldChange = false;
 	  boolean isShieldGain = false;
 	  boolean isShieldLoss = false;
 	  boolean isAffliction = false;
@@ -659,6 +660,7 @@ public class NRG
 	  
 	  int shields = 0;
 	  int gainAmt = 0;
+	  int lossAmt = 0;
 	  int totalIn = 0;
 	  int totalAr = 0;
 	  
@@ -758,14 +760,13 @@ public class NRG
 	  // TODO: here for conditionals
 	  // effect.getCondition();
 	  // checking of conditionals
-		  
+	  boolean itResolves = ((isConditional && passesConditional) || !isConditional) && !interrupted;
 	  
 	  if (!hiddenPass && !effect.isVisible()) {
 		  // dont resolve hidden effects the turn they're used.  check for them later
 		  // but we still have to apply them
 	  } else
-		  if (((isConditional && passesConditional) || !isConditional) && !interrupted) {
-		  
+		  if (itResolves) {
 		  // analyze and set character flags based on the below execution.
 		  
 		  if (!StringUtils.isNullOrEmpty(effect.getQuality())) {
@@ -806,8 +807,10 @@ public class NRG
 			  }
 			  isHeal = isDamage ? effect.getStatMods().get(Stat.DAMAGE) < 0 : false;
 			  isShield = effect.getStatMods().get(Stat.SHIELDS) != null;
-			  isShieldGain = effect.getStatMods().get(Stat.SHIELD_GAIN) != null;
-			  isShieldLoss = isShieldGain ? effect.getStatMods().get(Stat.SHIELD_GAIN) < 0 : false;
+			  isShieldChange = effect.getStatMods().get(Stat.SHIELD_GAIN) != null;
+			  isShieldGain = isShieldChange ? effect.getStatMods().get(Stat.SHIELD_GAIN) > 0 : false;
+			  isShieldLoss = isShieldChange && !isShieldGain;
+			  lossAmt = isShieldLoss ? -effect.getStatMods().get(Stat.SHIELD_GAIN) : 0;
 			  isAffliction = effect.isAffliction();
 			  isRandomChange = effect.getStatMods().get(Stat.ENERGY_CHANGE) != null;
 			  isStrengthChange = effect.getStatMods().get(Stat.STRENGTH_CHANGE) != null;
@@ -822,9 +825,9 @@ public class NRG
 			  isDmgMod = isDmgOutIn || isPhysDmgOutIn || isMagDmgOutIn || isAffDmgOutIn;
 			  //TODO:
 			  // CHECK INVULNERABLE HERE (for existing effects)
-			  //check if character has resistance, mods, boosts, etc to this type of damage
-			  for (BattleEffect e : currentFromEffects) {	
-				  if (isDmg && !isHeal) {
+			  //check if character has resistance, mods, boosts, etc to this type of damage	
+			  if (isDmg && !isHeal) {
+				  for (BattleEffect e : currentFromEffects) {
 					  if (e.getStatMods().get(Stat.DAMAGE_OUT) != null) {
 						  totalIn = totalIn + e.getStatMods().get(Stat.DAMAGE_OUT);
 						  hasMods = true;
@@ -905,7 +908,11 @@ public class NRG
 							  int dmg = effect.getStatMods().get(Stat.DAMAGE);
 							  int flatDmg = dmg + totalIn;
 							  if (flatDmg > 0) {
-								  finalDamage = Math.round(flatDmg * ((100 - totalAr) / 100));	  
+								  int nonArmor = 100 - totalAr;
+								  double armorMultiplier = (double) nonArmor / (double) 100;
+								  double afterArmor = flatDmg * armorMultiplier;
+								  
+								  finalDamage = (int) Math.round(afterArmor);
 							  }
 						  } else {
 							  finalDamage = effect.getStatMods().get(Stat.DAMAGE);
@@ -914,7 +921,11 @@ public class NRG
 					  if (effect.getStatMods().get(Stat.BONUS_DAMAGE) != null) {
 						  if (hasMods) {
 							  int dmg = effect.getStatMods().get(Stat.BONUS_DAMAGE);
-							  finalDamage = Math.round(dmg * ((100 - totalAr) / 100));
+							  int nonArmor = 100 - totalAr;
+							  double armorMultiplier = (double) nonArmor / (double) 100;
+							  double afterArmor = dmg * armorMultiplier;
+							  
+							  finalDamage = (int) Math.round(afterArmor);
 						  } else {
 							  finalDamage = finalDamage + effect.getStatMods().get(Stat.BONUS_DAMAGE);
 						  }
@@ -934,25 +945,37 @@ public class NRG
 				  
 				  // remove appropriate amount of shields
 				  // if heal, or target is invuln, dont mess with shields
-				  int destruct = isShield ? effect.getStatMods().get(Stat.SHIELDS) : 0;
+//				  int destruct = isShield ? effect.getStatMods().get(Stat.SHIELDS) : 0;
 				  if (!isHeal && isDamagable && !isAffliction) {
 					  for (BattleEffect ef : currentTargetEffects) {
 						  if (ef.getStatMods() != null) {
 							  if (ef.getStatMods().get(Stat.SHIELDS) != null) {
-								  shields = ef.getStatMods().get(Stat.SHIELDS);
-								  if (destruct >= shields) {
-									  destruct = destruct - shields;
-								  } else {
-									  ef.getStatMods().put(Stat.SHIELDS, shields - destruct);
-								  }
-								  if (finalDamage > 0) {
-									  finalDamage = finalDamage - shields;
-									  if (finalDamage < 0) {
-										  ef.getStatMods().put(Stat.SHIELDS, -finalDamage);
-									      ef.setDescription("This unit has " + -finalDamage + " shields.");
-									      finalDamage = 0;
-									  } else {
+								  if (isShieldLoss) {
+									  shields = ef.getStatMods().get(Stat.SHIELDS);
+									  if (lossAmt >= shields) {
+										  lossAmt = lossAmt + shields;
 										  ef.setDuration(997);
+										  ef.getStatMods().put(Stat.SHIELDS, 0);
+									      ef.setDescription("This unit has lost all shields.");
+									  } else {
+										  ef.getStatMods().put(Stat.SHIELDS, shields - lossAmt);
+									  }
+								  } else {
+									  shields = ef.getStatMods().get(Stat.SHIELDS);
+//									  if (destruct >= shields) {
+//										  destruct = destruct - shields;
+//									  } else {
+//										  ef.getStatMods().put(Stat.SHIELDS, shields - destruct);
+//									  }
+									  if (finalDamage > 0) {
+										  finalDamage = finalDamage - shields;
+										  if (finalDamage < 0) {
+											  ef.getStatMods().put(Stat.SHIELDS, -finalDamage);
+										      ef.setDescription("This unit has " + -finalDamage + " shields.");
+										      finalDamage = 0;
+										  } else {
+											  ef.setDuration(997);
+										  }
 									  }
 								  }
 							  }
