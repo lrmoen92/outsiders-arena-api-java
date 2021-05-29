@@ -817,7 +817,7 @@ public class SeedData
 	  
 	  // EFFECTS 2
 	  List<Effect> effects1 = buildEffects(null, 3,
-			  "Manor Security", "Drundar has 50% armor.", "/assets/drundar2.png",
+			  "Manor Security", "Drundar has 50% physical armor.", "/assets/drundar2.png",
 			  true, false, false, false, false, true, false,
 			  buildStat(Stat.PHYSICAL_ARMOR, 50), null, null);
 	  

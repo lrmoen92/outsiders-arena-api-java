@@ -17,6 +17,6 @@ public class CassandraConfig
   
 	@Override
 	protected String getContactPoints() {
-		return "192.168.0.69";
+		return "192.168.0.77";
 	}
 }
