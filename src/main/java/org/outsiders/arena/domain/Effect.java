@@ -5,14 +5,36 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.MapKeyJoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@UserDefinedType("battleeffect")
+@Entity
+@Table(name = "Effect", schema = "outsiders")
+@Embeddable
 public class Effect
 {
-  
+	  @Id
+	  @GeneratedValue(strategy = GenerationType.IDENTITY)
+	  private int id;
   protected String name;
   protected String description;
   protected String avatarUrl = "https://i.imgur.com/CiUI6Sg.png";
@@ -31,9 +53,14 @@ public class Effect
   protected String condition;
   // buff or debuff
   protected String quality;
-  protected Map<String, Integer> statMods = Collections.emptyMap();
+
+  @MapKeyColumn(name = "stat")
+  @Column(name = "mod")
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  protected Map<String, Integer> statMods = new HashMap<>();
  
-  
+
   public Effect() {}
   
   public Effect(boolean physical, boolean magical, boolean affliction, boolean interruptable, boolean conditional)

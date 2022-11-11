@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.h2.util.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.outsiders.arena.domain.Ability;
 import org.outsiders.arena.domain.Character;
 import org.outsiders.arena.domain.Conditional;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+
 @Component
 public class SeedData
   implements CommandLineRunner
@@ -45,11 +47,14 @@ public class SeedData
   private MissionService missionService;
   
   public void run(String... args)
-    throws Exception
   {  
-    makeOutsiders();
-    makeMissions();
-    makeUsers();
+	  try {
+		    makeOutsiders();
+		    makeMissions();
+		    makeUsers();
+	  } catch (Exception e) {
+		  
+	  }
     LOG.info("ALL DATA SEEDED SUCCESSFULLY");
   }
   

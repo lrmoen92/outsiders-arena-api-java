@@ -1,14 +1,27 @@
 package org.outsiders.arena.domain;
 
 import java.util.List;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Table;
 
-@Table
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+@Entity
+@Table(name = "Mission", schema = "outsiders")
 public class Mission {
 
-	@PrimaryKey
+	  @Id
+	  @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
 	private String name;
@@ -17,6 +30,8 @@ public class Mission {
 	private int minmumLevel;
 	private int prerequisiteMissionId;
 	private int characterIdUnlocked;
+	  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	  @Fetch(value = FetchMode.SUBSELECT)
 	private List<MissionRequirement> requirements;
 	
 	public String toString() {

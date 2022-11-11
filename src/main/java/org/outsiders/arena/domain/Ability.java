@@ -6,13 +6,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@UserDefinedType
+@Entity
+@Table(name = "Ability", schema = "outsiders")
+@Embeddable
 public class Ability
 {
+	  @Id
+	  @GeneratedValue(strategy = GenerationType.IDENTITY)
+private int id;
   private int cooldown = 0;
   private String name;
   private String abilityUrl;
@@ -20,12 +41,31 @@ public class Ability
   private int position;
   private String targets;
   private String types;
-  private List<String> cost = Collections.singletonList("RANDOM");
-  private List<Effect> selfEffects = Collections.emptyList();
-  private List<Effect> enemyEffects = Collections.emptyList();
-  private List<Effect> aoeEnemyEffects = Collections.emptyList();
-  private List<Effect> allyEffects = Collections.emptyList();
-  private List<Effect> aoeAllyEffects = Collections.emptyList();
+  
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<String> cost = new ArrayList<>();;
+  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<Effect> selfEffects = new ArrayList<>();
+  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<Effect> enemyEffects = new ArrayList<>();
+  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<Effect> aoeEnemyEffects = new ArrayList<>();
+  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<Effect> allyEffects = new ArrayList<>();
+  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<Effect> aoeAllyEffects = new ArrayList<>();
+  
   private boolean aoe = false;
   private boolean self = false;
   private boolean ally = false;

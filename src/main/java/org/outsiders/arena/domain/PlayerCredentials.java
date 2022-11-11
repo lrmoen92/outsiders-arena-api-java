@@ -2,10 +2,22 @@ package org.outsiders.arena.domain;
 
 import java.io.Serializable;
 
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-@UserDefinedType
+
+@Entity
+@Table(name = "PlayerCredentials", schema = "outsiders")
+@Embeddable
 public class PlayerCredentials implements Serializable {
+	
+	  @Id
+	  @GeneratedValue(strategy = GenerationType.IDENTITY)
+	  private int id;
 
 	/**
 	 * 

@@ -4,21 +4,53 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
-@UserDefinedType
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+
+@Entity
+@Table(name = "CharacterInstance", schema = "outsiders")
+@Embeddable
 public class CharacterInstance
-{
+{	  
+	@Id
+	  @GeneratedValue(strategy = GenerationType.IDENTITY)
+private int id;
   private int hp = 100;
-  private List<Integer> cooldowns = Arrays.asList(0, 0, 0, 0);
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<Integer> cooldowns = new ArrayList<>(4);
   // player 1 (0, 1, 2) player 2 (3, 4, 5)
   private int position;
   private int characterId;
-  
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private List<BattleEffect> effects = new ArrayList<>();
   // store conditional flags here
+
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private List<String> flags = new ArrayList<>();
   private boolean dead = false;
+  
+  public CharacterInstance() {
+	  this.cooldowns.add(0);
+	  this.cooldowns.add(0);
+	  this.cooldowns.add(0);
+	  this.cooldowns.add(0);
+  }
   
   public boolean isDead()
   {

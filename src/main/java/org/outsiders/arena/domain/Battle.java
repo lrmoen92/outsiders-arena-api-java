@@ -5,19 +5,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Table;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.outsiders.arena.service.CharacterService;
 import org.outsiders.arena.util.NRG;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Table
+@Entity
+@Table(name = "Battle", schema = "outsiders")
 public class Battle
 {
-  @PrimaryKey
+	  @Id
+	  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
   private boolean playerOneStart = new Random().nextBoolean();
   private String status;
@@ -26,9 +39,17 @@ public class Battle
   private int arenaId;
   private int playerIdOne;
   private int playerIdTwo;
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private List<CharacterInstance> playerOneTeam;
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private List<CharacterInstance> playerTwoTeam;
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private Map<String, Integer> playerOneEnergy;
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private Map<String, Integer> playerTwoEnergy;
   
   @JsonGetter

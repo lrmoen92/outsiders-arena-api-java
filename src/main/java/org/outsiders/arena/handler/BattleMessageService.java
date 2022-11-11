@@ -58,7 +58,6 @@ public class BattleMessageService {
     }
 
     public String handleMatchmakingMessage(Map valueMap) {
-        Battle savedBattle = null;
         Integer characterId1 = getMapEntryAsInt("char1", valueMap);
         Integer characterId2 = getMapEntryAsInt("char2", valueMap);
         Integer characterId3 = getMapEntryAsInt("char3", valueMap);
@@ -88,7 +87,7 @@ public class BattleMessageService {
 	        list1.add(i3);
 	        battle.setPlayerOneTeam(list1);
 
-	        savedBattle = this.battleService.save(battle);
+	        Battle savedBattle = this.battleService.save(battle);
 	        LOG.info("SAVED BATTLE:: " + savedBattle.toString());
 	        return new Gson().toJson("WAITING FOR OPPONENTS");
         } else {
@@ -117,7 +116,7 @@ public class BattleMessageService {
                 battle.drawPlayerTwoEnergy(1);
             }
 
-            savedBattle = this.battleService.save(battle);
+            Battle savedBattle = this.battleService.save(battle);
 
 	        battle.setStatus("STARTING");
             List<Character> characters = characterService.getCharactersForBattle(savedBattle);

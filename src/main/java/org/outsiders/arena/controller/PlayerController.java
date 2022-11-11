@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.h2.util.StringUtils;
 import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.Character;
+import org.outsiders.arena.domain.CharacterInstance;
 import org.outsiders.arena.domain.Mission;
 import org.outsiders.arena.domain.MissionProgress;
 import org.outsiders.arena.domain.OrphanMessage;
@@ -64,6 +65,32 @@ public class PlayerController
   
   // player id - arena id
   private Map<Integer, Integer> stagedGames = new HashMap<>();
+  
+  
+  @RequestMapping(value={"/api/battle/teststart"}, method=RequestMethod.GET)
+  public void startBattle() {
+
+	  Battle battle = new Battle();
+	  
+      ArrayList<CharacterInstance> list1 = new ArrayList<CharacterInstance>();
+      CharacterInstance i1 = new CharacterInstance();
+      CharacterInstance i2 = new CharacterInstance();
+      CharacterInstance i3 = new CharacterInstance();
+      i1.setCharacterId(1);
+      i2.setCharacterId(2);
+      i3.setCharacterId(3);
+      i1.setPosition(0);
+      i2.setPosition(1);
+      i3.setPosition(2);
+      list1.add(i1);
+      list1.add(i2);
+      list1.add(i3);
+      battle.setPlayerOneTeam(list1);
+	  
+	  battleService.save(battle);
+	  
+	  
+  }
   
   
   @RequestMapping(value={"/api/player/arena/{playerId}/{opponentName}"}, method=RequestMethod.GET)

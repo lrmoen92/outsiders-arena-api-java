@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.datastax.driver.core.querybuilder.Delete.Conditions;
 
 @Service
 public class NRG
@@ -78,7 +77,7 @@ public class NRG
   }
   
   public Map<String, Integer> drawEnergy(int i, Map<String, Integer> previous) {
-	  if (previous == null) {
+	  if (previous == null || previous.isEmpty()) {
 		  previous = new HashMap<>();
 		  previous.put(Energy.STRENGTH, 0);
 		  previous.put(Energy.DEXTERITY, 0);
@@ -781,7 +780,7 @@ public class NRG
 						  // their hidden effect is ending, remove it as normal but replace it with a 1 turn blank effect that's not hidden
 						  effectEnded.setDescription(effectEnded.getName() + " has ended.");
 						  effectEnded.setQuality(null);
-						  effectEnded.setStatMods(Collections.emptyMap());
+						  effectEnded.setStatMods(new HashMap<>());
 						  effectEnded.setCondition(null);
 						  effectEnded.setConditional(false);
 						  // 995 code for hidden skill ending, revealed
@@ -1203,7 +1202,7 @@ public class NRG
 						  // their hidden effect is ending, remove it as normal but replace it with a 1 turn blank effect that's not hidden
 						  BattleEffect effectEnded = currentTargetEffects.get(index);
 						  effectEnded.setQuality(null);
-						  effectEnded.setStatMods(Collections.emptyMap());
+						  effectEnded.setStatMods(new HashMap<>());
 						  effectEnded.setCondition(null);
 						  effectEnded.setConditional(false);
 						  effectEnded.setDescription(effectEnded.getName() + " has ended.");

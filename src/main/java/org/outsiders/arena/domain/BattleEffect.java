@@ -3,9 +3,19 @@ package org.outsiders.arena.domain;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-@UserDefinedType
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+
+@Embeddable
+@Entity
+@JsonIgnoreProperties({"id"})
 public class BattleEffect extends Effect {
 	
 	// used to identify an effect within the context of a battle

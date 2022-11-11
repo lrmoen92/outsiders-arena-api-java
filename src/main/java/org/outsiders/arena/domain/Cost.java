@@ -1,17 +1,18 @@
 package org.outsiders.arena.domain;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class Cost {
 
-	  public static final List<String> free = Collections.emptyList();
-	  public static final List<String> oneRan = Collections.singletonList(Energy.RANDOM);
-	  public static final List<String> oneDiv = Collections.singletonList(Energy.DIVINITY);
-	  public static final List<String> oneArc = Collections.singletonList(Energy.ARCANA);
-	  public static final List<String> oneStr = Collections.singletonList(Energy.STRENGTH);
-	  public static final List<String> oneDex = Collections.singletonList(Energy.DEXTERITY);
+	  public static final List<String> free = new ArrayList<>();
+	  public static final List<String> oneRan = Arrays.asList(Energy.RANDOM);
+	  public static final List<String> oneDiv = Arrays.asList(Energy.DIVINITY);
+	  public static final List<String> oneArc = Arrays.asList(Energy.ARCANA);
+	  public static final List<String> oneStr = Arrays.asList(Energy.STRENGTH);
+	  public static final List<String> oneDex = Arrays.asList(Energy.DEXTERITY);
 	  public static final List<String> oneDivOneRan = Arrays.asList(Energy.DIVINITY, Energy.RANDOM);
 	  public static final List<String> oneArcOneRan = Arrays.asList(Energy.ARCANA, Energy.RANDOM);
 	  public static final List<String> oneStrOneRan = Arrays.asList(Energy.STRENGTH, Energy.RANDOM);

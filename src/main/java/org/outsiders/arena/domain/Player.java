@@ -4,27 +4,50 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Table
+@Entity
+@Table(name = "Player", schema = "outsiders")
 public class Player
 {
-  @PrimaryKey
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
   private String avatarUrl;
+  @Column(unique=true)
   private String displayName;
+  @OneToOne(cascade = CascadeType.ALL)
   private PlayerCredentials credentials;
   // rank
   private int level;
   // raw xp (lp)
   // 0/100  (+30, +20, +10) (-25, -15, -5)
   private int xp;
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private Set<Integer> missionIdsCompleted;
+  @ElementCollection(fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private Set<Integer> characterIdsUnlocked;
   // mission id, current amount (as opposed to total amount needed)
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
   private List<MissionProgress> missionProgress;
   
   @JsonIgnore
