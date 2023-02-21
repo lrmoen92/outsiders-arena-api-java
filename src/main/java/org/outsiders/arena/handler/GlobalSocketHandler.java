@@ -16,7 +16,6 @@ import com.google.gson.Gson;
 public class GlobalSocketHandler
 extends SocketHandler {
     public static Logger LOG = LoggerFactory.getLogger(GlobalSocketHandler.class);
-    protected WebSocketSession session;
 
     public void processMessage(WebSocketSession webSocketSession, TextMessage message) throws InterruptedException, IOException {
         Map valueMap = (Map)new Gson().fromJson((String)message.getPayload(), Map.class);
@@ -35,7 +34,6 @@ extends SocketHandler {
 
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws InterruptedException, IOException {
         for (WebSocketSession webSocketSession : this.sessions) {
-            this.session = session;
             this.processMessage(webSocketSession, message);
         }
     }

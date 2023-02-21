@@ -21,46 +21,45 @@ import org.hibernate.annotations.LazyCollectionOption;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToMany;
 
+
 @Entity
-@Table(name = "Character", schema = "outsiders")
-public class Character
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Character
 {
 	  @Id
 	  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
-  private String avatarUrl;
-  private String name;
-  private String description;
+	  @Column
+protected int id;
+
+protected String avatarUrl;
+  protected String name;
+  protected String description;
   
   @ElementCollection(fetch = FetchType.EAGER)
   @Fetch(value = FetchMode.SUBSELECT)
-  private List<String> factions;
+  protected List<String> factions;
   
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @Fetch(value = FetchMode.SUBSELECT)
-  private List<Ability> abilities;
+  protected List<Ability> abilities;
   
+
   
-  public String toString()
-  {
-	  
-	  return "Name: " + this.name + ", Id: " + this.id;
-  }
-  
-  public int getId()
-  {
-    return this.id;
-  }
-  
-  public void setId(int id)
-  {
-    this.id = id;
-  }
-  
-  public String getName()
+  public int getId() {
+	return id;
+}
+
+public void setId(int id) {
+	this.id = id;
+}
+
+public String getName()
   {
     return this.name;
   }

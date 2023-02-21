@@ -1,83 +1,31 @@
 package org.outsiders.arena.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import org.outsiders.arena.domain.Battle;
 import org.outsiders.arena.domain.Mission;
-import org.outsiders.arena.domain.CharacterInstance;
-import org.outsiders.arena.repository.CharacterRepository;
-import org.outsiders.arena.repository.MissionRepository;
-import org.outsiders.arena.service.CharacterService;
+import org.outsiders.arena.repository.Missions;
 import org.outsiders.arena.service.MissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MissionServiceImpl
-  implements MissionService
-{
-  private MissionRepository repo;
-  
+public class MissionServiceImpl implements MissionService {
+	
   @Autowired
-  public MissionServiceImpl(MissionRepository repo)
-  {
-    this.repo = repo;
-  }
+  private Missions missions;
   
   public Mission save(Mission entity)
   {
-    return (Mission)this.repo.save(entity);
+    return this.missions.addMission(entity);
   }
   
-  public Iterable<Mission> saveAll(Iterable<Mission> entities)
+  public Mission findById(Integer id)
   {
-    return this.repo.saveAll(entities);
+    return this.missions.getMission(id);
   }
-  
-  public Optional<Mission> findById(Integer id)
+
+  public List<Mission> findAll()
   {
-    return this.repo.findById(id);
+    return this.missions.getAll();
   }
-  
-  public boolean existsById(Integer id)
-  {
-    return this.repo.existsById(id);
-  }
-  
-  public Iterable<Mission> findAll()
-  {
-    return this.repo.findAll();
-  }
-  
-  public Iterable<Mission> findAllById(Iterable<Integer> ids)
-  {
-    return this.repo.findAllById(ids);
-  }
-  
-  public long count()
-  {
-    return this.repo.count();
-  }
-  
-  public void deleteById(Integer id)
-  {
-    this.repo.deleteById(id);
-  }
-  
-  public void delete(Mission entity)
-  {
-    this.repo.delete(entity);
-  }
-  
-  public void deleteAll(Iterable<Mission> entities)
-  {
-    this.repo.deleteAll(entities);
-  }
-  
-  public void deleteAll()
-  {
-    this.repo.deleteAll();
-  }
+
 }

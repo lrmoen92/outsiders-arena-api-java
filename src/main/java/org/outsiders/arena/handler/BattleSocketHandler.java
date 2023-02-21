@@ -18,58 +18,54 @@ import com.google.gson.Gson;
 public class BattleSocketHandler
 extends SocketHandler {
     public static Logger LOG = LoggerFactory.getLogger(BattleSocketHandler.class);
-    protected WebSocketSession session;
     
     @Autowired
     protected BattleMessageService battleMessageService;
 
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        this.session = session;
-        this.processMessage(message);
-    }
-
-    public WebSocketSession getSession() {
-        return this.session;
-    }
-
-    public void processMessage(TextMessage message) throws Exception {
-    	LOG.info("Literally Anything");
-    	LOG.info(message.toString());
-    	LOG.info(message.getPayload());
-    	// map representing json sent in
-    	Map m = new Gson().fromJson(message.getPayload(), Map.class);
-    	
-    	//create response
-    	WebSocketMessage msg = this.createTextMessage(m);
-    	
-    	boolean twoPlayersMessage = false;
-    	
-        for (WebSocketSession s : sessions) {
-        	if (session.getUri().equals(s.getUri()) && !session.equals(s)) {
-        		if (m.get("type").toString().equals("MATCH_MAKING") || m.get("type").toString().equals("TURN_END") || m.get("type").toString().equals("CHAT") || m.get("type").toString().equals("GAME_END")) {
-        			LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " MATCHED AND SENT TO " + s.getRemoteAddress().toString() + " ON ARENA : " + s.getUri().toString());
-//        			while (!session.isOpen()) {
-//        				Thread.sleep(500);
-//        			}
-        			trySend(s, msg);
-            		twoPlayersMessage = true;
-        		}
-        	} 
-        }
-        if (!twoPlayersMessage) {
-        	LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " AND ARENA : " + session.getUri().toString());
-        	session.sendMessage(msg);
-        }
+        this.processMessage(session, message);
     }
     
-    public void trySend(WebSocketSession s, WebSocketMessage msg) throws IOException, InterruptedException {
+    public boolean isTwoPlayersMessage(String type) {
+    	return (type.equals("MATCH_MAKING") || type.equals("TURN_END") || 
+    			type.equals("CHAT") || type.equals("GAME_END"));
+    }
+    
+    public boolean sessionsShareUri(WebSocketSession session, WebSocketSession s) {
+    	return (session.getUri().equals(s.getUri()) && !session.equals(s));
+    }
+
+    public void processMessage(WebSocketSession session, TextMessage message) throws Exception {
+		LOG.info("Literally Anything");
+		LOG.info(message.toString());
+		LOG.info(message.getPayload());
+		
+		// map representing json sent in
+		Map m = new Gson().fromJson(message.getPayload(), Map.class);
+		String type = m.get("type").toString();
+		boolean twoPlayersMessage = isTwoPlayersMessage(type);
+		WebSocketMessage msg = this.createTextMessage(m);
+		
+	    for (WebSocketSession s : sessions) {
+	    	if (sessionsShareUri(session, s) && twoPlayersMessage) {
+	    			LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " MATCHED AND SENT TO " + s.getRemoteAddress().toString() + " ON ARENA : " + s.getUri().toString());
+	    			trySend(s, msg);
+	    			trySend(session, msg);
+	    	} 
+	    }
+	    if (!twoPlayersMessage) {
+	    	LOG.info(m.get("type").toString() + " MESSAGE RECIEVED FROM " + session.getRemoteAddress().toString() + " AND ARENA : " + session.getUri().toString());
+	    	trySend(session, msg);
+	    }
+	}
+    
+    public synchronized void trySend(WebSocketSession s, WebSocketMessage msg) throws IOException, InterruptedException {
 		try {
-	    	session.sendMessage(msg);
-    		s.sendMessage(msg);
-		} catch (IllegalStateException e) {
+			synchronized(s) {
+	    		s.sendMessage(msg);
+			}
+		} catch (Exception e) {
 			LOG.info(e.getMessage());
-			Thread.sleep(2000);
-			this.trySend(s,  msg);
 		}
     }
 

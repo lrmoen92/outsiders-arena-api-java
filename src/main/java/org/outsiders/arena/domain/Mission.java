@@ -16,22 +16,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-@Entity
-@Table(name = "Mission", schema = "outsiders")
 public class Mission {
 
-	  @Id
-	  @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
 	private String name;
 	private String description;
 	private String avatarUrl;
 	private int minmumLevel;
 	private int prerequisiteMissionId;
 	private int characterIdUnlocked;
-	  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	  @Fetch(value = FetchMode.SUBSELECT)
+	
 	private List<MissionRequirement> requirements;
 	
 	public String toString() {

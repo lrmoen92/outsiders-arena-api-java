@@ -23,28 +23,35 @@ import org.hibernate.annotations.FetchMode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "Player", schema = "outsiders")
 public class Player
 {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
+  
   private String avatarUrl;
+  
   @Column(unique=true)
   private String displayName;
+  
   @OneToOne(cascade = CascadeType.ALL)
   private PlayerCredentials credentials;
+  
   // rank
   private int level;
+  
   // raw xp (lp)
   // 0/100  (+30, +20, +10) (-25, -15, -5)
   private int xp;
+  
   @ElementCollection(fetch = FetchType.EAGER)
   @Fetch(value = FetchMode.SUBSELECT)
   private Set<Integer> missionIdsCompleted;
+  
   @ElementCollection(fetch = FetchType.EAGER)
   @Fetch(value = FetchMode.SUBSELECT)
   private Set<Integer> characterIdsUnlocked;
+  
   // mission id, current amount (as opposed to total amount needed)
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @Fetch(value = FetchMode.SUBSELECT)

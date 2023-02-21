@@ -14,13 +14,13 @@ public class SocketHandler
 {
   List<WebSocketSession> sessions = new CopyOnWriteArrayList<WebSocketSession>();
   
-  public void afterConnectionEstablished(WebSocketSession session)
+  public synchronized void afterConnectionEstablished(WebSocketSession session)
     throws Exception
   {
     this.sessions.add(session);
   }
   
-  public void afterConnectionClosed(WebSocketSession session, CloseStatus status)
+  public synchronized void afterConnectionClosed(WebSocketSession session, CloseStatus status)
     throws Exception
   {
     this.sessions.remove(session);

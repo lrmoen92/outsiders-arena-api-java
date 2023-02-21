@@ -15,10 +15,13 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.MapKeyJoinColumn;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -26,11 +29,11 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 
 @Entity
-@Table(name = "Effect", schema = "outsiders")
-@Embeddable
-public class Effect
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Effect
 {
 	  @Id
 	  @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,44 +62,38 @@ public class Effect
   @ElementCollection(fetch = FetchType.EAGER)
   @Fetch(value = FetchMode.SUBSELECT)
   protected Map<String, Integer> statMods = new HashMap<>();
- 
+  
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
 
-  public Effect() {}
-  
-  public Effect(boolean physical, boolean magical, boolean affliction, boolean interruptable, boolean conditional)
-  {
-    this.physical = physical;
-    this.magical = magical;
-    this.affliction = affliction;
-    this.interruptable = interruptable;
-    this.conditional = conditional;
-  }
-  
 	public int getDuration() {
 		return duration;
 	}
+	
 	public void setDuration(int duration) {
 		this.duration = duration;
 	}
-  public String getDescription()
-  {
-    return this.description;
-  }
-  
-  public void setDescription(String description)
-  {
-    this.description = description;
-  }
-  
-  public String getName()
-  {
-    return this.name;
-  }
-  
-  public void setName(String name)
-  {
-    this.name = name;
-  }
+	
+	public String getDescription(){
+	    return this.description;
+	}
+	  
+	public void setDescription(String description){
+	    this.description = description;
+	}
+	  
+	public String getName(){
+	    return this.name;
+	}
+	  
+	public void setName(String name){
+	    this.name = name;
+	}
 
 	public boolean isConditional() {
 		return conditional;
@@ -106,97 +103,85 @@ public class Effect
 		this.conditional = conditional;
 	}
 	
-	public void setInterruptable(boolean interruptable)
-  {
-    this.interruptable = interruptable;
-  }
+	public void setInterruptable(boolean interruptable){
+	    this.interruptable = interruptable;
+	}
   
-  public void setPhysical(boolean physical)
-  {
-    this.physical = physical;
-  }
+	public void setPhysical(boolean physical){
+	    this.physical = physical;
+	}
   
-  public void setMagical(boolean magical)
-  {
-    this.magical = magical;
-  }
+	public void setMagical(boolean magical){
+	    this.magical = magical;
+	}
   
-  public boolean isInterruptable()
-  {
-    return this.interruptable;
-  }
+	public boolean isInterruptable(){
+	    return this.interruptable;
+	}
   
-  public boolean isPhysical()
-  {
-    return this.physical;
-  }
+	public boolean isPhysical(){
+	    return this.physical;
+	}
   
-  public boolean isMagical()
-  {
-    return this.magical;
-  }
+	public boolean isMagical(){
+	    return this.magical;
+	}
   
+	public Map<String, Integer> getStatMods(){
+	    return this.statMods;
+	}
   
-  
-  public Map<String, Integer> getStatMods()
-  {
-    return this.statMods;
-  }
-  
-  public void setStatMods(Map<String, Integer> statMods)
-  {
-    this.statMods = statMods;
-  }
+	public void setStatMods(Map<String, Integer> statMods){
+	    this.statMods = statMods;
+	}
 
-
-
-public String getCondition() {
-	return condition;
-}
-
-public void setCondition(String condition) {
-	this.condition = condition;
-}
-
-public String getQuality() {
-	return quality;
-}
-
-public void setQuality(String quality) {
-	this.quality = quality;
-}
-
-public boolean isVisible() {
-	return visible;
-}
-
-public void setVisible(boolean visible) {
-	this.visible = visible;
-}
-
-
-public String getAvatarUrl() {
-	return avatarUrl;
-}
-
-public void setAvatarUrl(String avatarUrl) {
-	this.avatarUrl = avatarUrl;
-}
-
-public boolean isAffliction() {
-	return affliction;
-}
-
-public void setAffliction(boolean affliction) {
-	this.affliction = affliction;
-}
-
-public boolean isStacks() {
-	return stacks;
-}
-
-public void setStacks(boolean stacks) {
-	this.stacks = stacks;
-}
+	public String getCondition() {
+		return condition;
+	}
+	
+	public void setCondition(String condition) {
+		this.condition = condition;
+	}
+	
+	public String getQuality() {
+		return quality;
+	}
+	
+	public void setQuality(String quality) {
+		this.quality = quality;
+	}
+	
+	public boolean isVisible() {
+		return visible;
+	}
+	
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+	
+	
+	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+	
+	public void setAvatarUrl(String avatarUrl) {
+		this.avatarUrl = avatarUrl;
+	}
+	
+	public boolean isAffliction() {
+		return affliction;
+	}
+	
+	public void setAffliction(boolean affliction) {
+		this.affliction = affliction;
+	}
+	
+	public boolean isStacks() {
+		return stacks;
+	}
+	
+	public void setStacks(boolean stacks) {
+		this.stacks = stacks;
+	}
 
 }
